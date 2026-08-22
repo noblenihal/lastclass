@@ -220,6 +220,33 @@
   --font-mono: var(--font-geist-mono);
 }
 
+
+/* ------------------------------------------------------------------
+   Fixed surfaces. These are physical objects in the fiction — a
+   chalkboard is the same chalkboard whichever theme you study in — so
+   they are deliberately theme-independent. Named here rather than
+   inlined at the point of use, per the token rule.
+   ------------------------------------------------------------------ */
+:root {
+  --board: oklch(23% 0.022 155);
+  --board-2: oklch(27% 0.024 155);
+  --board-frame: oklch(42% 0.055 58);
+  --chalk: oklch(96% 0.02 85);
+  --chalk-2: oklch(84% 0.025 85);
+  --chalk-3: oklch(76% 0.05 80);
+  --chalk-line: oklch(92% 0.03 85);
+  --chalk-accent: oklch(80% 0.14 72);
+
+  --desk: oklch(52% 0.075 58);
+  --desk-2: oklch(38% 0.055 55);
+  --desk-leg: oklch(30% 0.04 55);
+  --desk-alert: oklch(58% 0.11 38);
+  --nameplate: oklch(96% 0.02 75);
+  --nameplate-ink: oklch(28% 0.04 55);
+
+  --scrim: oklch(0% 0 0 / 0.45);
+}
+
 html,
 body {
   overflow-x: clip;

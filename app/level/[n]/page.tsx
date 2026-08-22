@@ -286,13 +286,13 @@ function Loading({ rung, topic }: { rung: string; topic: string }) {
       {...politeProps()}
       className="rounded-[var(--radius-lg)] border-[6px] p-6"
       style={{
-        borderColor: "oklch(42% 0.055 58)",
-        background: "oklch(23% 0.022 155)",
+        borderColor: "var(--board-frame)",
+        background: "var(--board)",
       }}
     >
       <p
         className="mb-5 text-center text-[var(--text-base)]"
-        style={{ color: "oklch(84% 0.025 85)" }}
+        style={{ color: "var(--chalk-2)" }}
       >
         {copy[rung]}
         <motion.span
@@ -313,7 +313,7 @@ function Loading({ rung, topic }: { rung: string; topic: string }) {
             key={i}
             d={d}
             fill="none"
-            stroke="oklch(90% 0.04 82)"
+            stroke="var(--chalk-line)"
             strokeWidth={2}
             strokeLinecap="round"
             initial={{ pathLength: 0, opacity: 0.15 }}

@@ -244,20 +244,20 @@ export function Whiteboard({
       <div
         className="rounded-[var(--radius-lg)] border-[6px] p-4 shadow-[inset_0_2px_24px_rgb(0_0_0/0.35)] sm:p-6"
         style={{
-          borderColor: "oklch(42% 0.055 58)",
-          background: "oklch(23% 0.022 155)",
+          borderColor: "var(--board-frame)",
+          background: "var(--board)",
         }}
       >
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <span
             className="font-[family-name:var(--font-mono)] text-[var(--text-xs)] uppercase tracking-[0.16em]"
-            style={{ color: "oklch(76% 0.05 80)" }}
+            style={{ color: "var(--chalk-3)" }}
           >
             {topic}
           </span>
           <span
             className="font-[family-name:var(--font-mono)] text-[var(--text-xs)]"
-            style={{ color: "oklch(76% 0.05 80)" }}
+            style={{ color: "var(--chalk-3)" }}
           >
             {i + 1}/{beats.length}
           </span>
@@ -273,13 +273,13 @@ export function Whiteboard({
           >
             <h3
               className="text-center text-[var(--text-xl)] font-medium"
-              style={{ color: "oklch(96% 0.02 85)" }}
+              style={{ color: "var(--chalk)" }}
             >
               {beat.label}
             </h3>
             <p
               className="mt-0.5 text-center text-[var(--text-sm)]"
-              style={{ color: "oklch(84% 0.025 85)" }}
+              style={{ color: "var(--chalk-2)" }}
             >
               {beat.detail}
             </p>
@@ -308,12 +308,12 @@ export function Whiteboard({
                       ) : (
                         <div
                           className="h-[7.5rem] w-full"
-                          style={{ background: "oklch(27% 0.024 155)" }}
+                          style={{ background: "var(--board-2)" }}
                         />
                       )}
                       <figcaption
                         className="px-1 pt-1 text-center text-[var(--text-xs)]"
-                        style={{ color: "oklch(84% 0.025 85)" }}
+                        style={{ color: "var(--chalk-2)" }}
                       >
                         {e.label}
                       </figcaption>

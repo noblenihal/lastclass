@@ -90,9 +90,9 @@ export function Seat({
                 ? "opacity-95 drop-shadow-[0_0_14px_var(--color-urgent-ghost)]"
                 : "opacity-100") +
             (state === "speaking"
-              ? " drop-shadow-[0_0_20px_oklch(74%_0.17_58/0.55)]"
+              ? " drop-shadow-[0_0_20px_var(--color-accent-ghost)]"
               : up && severity === 3
-                ? " drop-shadow-[0_0_16px_oklch(66%_0.19_18/0.5)]"
+                ? " drop-shadow-[0_0_16px_var(--color-urgent-ghost)]"
                 : "")
           }
           priority={false}
@@ -105,20 +105,20 @@ export function Seat({
           className={
             "h-3 w-full rounded-t-[3px] transition-colors duration-[var(--dur-mid)] " +
             (state === "deferred"
-              ? "bg-[oklch(58%_0.11_38)]"
-              : "bg-[oklch(52%_0.075_58)]")
+              ? "bg-[var(--desk-alert)]"
+              : "bg-[var(--desk)]")
           }
         />
-        <div className="h-8 w-full rounded-b-[4px] bg-[oklch(38%_0.055_55)]" />
+        <div className="h-8 w-full rounded-b-[4px] bg-[var(--desk-2)]" />
         {/* legs */}
         <div className="mx-auto flex w-[78%] justify-between">
-          <span className="h-5 w-[3px] rounded-b bg-[oklch(30%_0.04_55)]" />
-          <span className="h-5 w-[3px] rounded-b bg-[oklch(30%_0.04_55)]" />
+          <span className="h-5 w-[3px] rounded-b bg-[var(--desk-leg)]" />
+          <span className="h-5 w-[3px] rounded-b bg-[var(--desk-leg)]" />
         </div>
       </div>
 
       {/* nameplate on the desk */}
-      <span className="relative -mt-[2.6rem] z-20 max-w-full truncate rounded-[3px] bg-[oklch(96%_0.02_75)] px-2 py-0.5 text-[0.6rem] font-semibold tracking-wide text-[oklch(28%_0.04_55)] shadow-sm">
+      <span className="relative -mt-[2.6rem] z-20 max-w-full truncate rounded-[3px] bg-[var(--nameplate)] px-2 py-0.5 text-[0.6rem] font-semibold tracking-wide text-[var(--nameplate-ink)] shadow-sm">
         {character.name}
       </span>
 

@@ -244,7 +244,7 @@ export function Roadmap({
               transition={{ duration: 0.2 }}
               onClick={close}
               aria-hidden="true"
-              className="fixed inset-0 z-40 bg-[oklch(0%_0_0/0.45)]"
+              className="fixed inset-0 z-40 bg-[var(--scrim)]"
             />
             <motion.aside
               key="drawer"

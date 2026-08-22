@@ -25,9 +25,9 @@ function wob(seed: number, amp = 2.2) {
   return ((x - Math.floor(x)) - 0.5) * 2 * amp;
 }
 
-const STROKE = "oklch(92% 0.03 85)";
-const ACCENT = "oklch(80% 0.14 72)";
-const INK = "oklch(96% 0.02 85)";
+const STROKE = "var(--chalk-line)";
+const ACCENT = "var(--chalk-accent)";
+const INK = "var(--chalk)";
 
 const draw = (i: number, total: number) => ({
   initial: { pathLength: 0, opacity: 0 },
@@ -411,7 +411,7 @@ export function Figure({ figure }: { figure: FigureData }) {
       {figure.caption && (
         <figcaption
           className="mt-1 text-center text-[var(--text-sm)]"
-          style={{ color: "oklch(84% 0.025 85)" }}
+          style={{ color: "var(--chalk-2)" }}
         >
           {figure.caption}
         </figcaption>

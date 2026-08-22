@@ -1,187 +1,92 @@
 LASTCLASS — PromptWars submission
 Challenge: Adaptive Learning Intelligence System
-Last updated: after Phase 3 (workspace UI + depth calibration)
 
 ================================================================
 1. PUBLIC GITHUB REPOSITORY LINK
 ================================================================
 https://github.com/noblenihal/lastclass
 
-  ⚠ ACTION NEEDED: the repo is currently PRIVATE. Before submitting run:
-    gh repo edit noblenihal/lastclass --visibility public --accept-visibility-change-consequences
-
 ================================================================
 2. DEPLOYED LINK
 ================================================================
-https://promptwar-private-90t0unko3-nihal-guptas-projects.vercel.app
+https://promptwar-private-doz1b2q88-nihal-guptas-projects.vercel.app
 
-  Vercel deployment protection is disabled — the URL is publicly reachable.
-  Sign-in screen offers "Continue as evaluator" so every feature is reachable
-  without credentials.
+  Publicly reachable — Vercel deployment protection is disabled.
+  The sign-in screen has a "Continue as evaluator" button, so every feature
+  is reachable without credentials.
 
 ================================================================
 3. DESCRIBE THE CHANGES/UPDATES MADE IN THE DEPLOYED VERSION
+   [paste-ready · 968/1024 chars]
 ================================================================
-LastClass turns any topic into a five-level climb and ends by making the
-learner teach it to a class that asks questions back.
+LastClass teaches you any topic in five levels, then makes you teach it back to a class that asks you questions.
 
-Enter a topic, a personal interest, and how deep to go (Basic / Medium /
-Advanced). Gemini breaks the topic into a prerequisite concept graph,
-classifies it as theory/practical/hybrid, and generates five levels titled
-for that specific topic: Watch, Compare, Picture, Do, Teach.
+Tell it what you want to learn and how deep to go — the same topic taught to a ten-year-old and to a university student becomes a genuinely different course, not the same one reworded. You can also paste something you've written about it, and it works out what you already understand.
 
-Depth genuinely changes the curriculum rather than the wording. "Gravity" at
-Basic returns Earth's Invisible Pull, Bigger Objects Pull Harder, Air Pushing
-Back; the same topic at Advanced returns the Equivalence Principle, the
-Stress-Energy Tensor and the Einstein Field Equations.
+Level 1, you watch it explained on a whiteboard, with drawings appearing as they're mentioned. Level 2, it's compared to a hobby you already know well. Level 3, you close your eyes and build a picture of it in your head. Level 4, you actually do it — photograph your attempt, or find the mistake in a broken example.
 
-The learner can also paste something they have written about the topic.
-Gemini reads it, judges their real level from how they use terminology and
-what they omit, and seeds the concept map with starting mastery values — so
-the map opens with real signal instead of zeros. Confident-sounding but wrong
-prose earns no mastery.
+Level 5 is the real test. You explain the topic to five students, and they ask about exactly the parts you glossed over. Answer vaguely and they press harder. Skip a question and that hand stays up.
 
-The learner model is a live concept map. Each node carries a mastery value
-that moves only on real evidence of what the learner did — never a preset.
-Brightness encodes mastery; a pulsing rose ring marks a concept the class
-still has questions about.
-
-Level 5 is the Classroom. The learner explains the topic out loud (speech
-recognition, with a typed fallback). Five animal students listen, then raise
-their hands — and the questions are generated from two merged signals: the
-learner's actual transcript, and their weakest nodes on the concept graph.
-Each character probes a different way an explanation fails:
-
-  Bruno (puppy)     — catches undefined jargon
-  Prof. Hoot (owl)  — hunts the uncovered edge case
-  Ria (fox)         — demands a real-world application
-  Tito (tortoise)   — catches the skipped step
-  Kiki (parrot)     — repeats the explanation back with one plausible error
-                      planted in it; the learner passes only by catching it
-
-Each question is spoken aloud in that character's own voice. The learner can
-Explain (answer it), Ask the Master, Skip for now (the hand stays up as
-visible debt), or End class.
-
-Ask the Master is the stuck button, and it is deliberately not a cheat. The
-Master teaches the LEARNER in text — an explanation at their depth using their
-interest domain, the points their answer must hit, and the common trap — but
-never answers the student. The learner still has to turn round and explain it
-themselves, and an assisted answer earns half the mastery of one they reached
-alone. The report card names which answers needed help. Answers are judged in character, and the verdict moves that concept's
-mastery on the map. Hands still up at the end become the report card and pull
-mastery down. There is no separate quiz anywhere in the product — teaching is
-the assessment.
-
-Built and deployed in phases; every phase is a working, deployed increment.
-  Phase 0 — scaffold, repo, deploy pipeline
-  Phase 1 — concept graph, five-level ladder, live mastery map
-  Phase 2 — the Classroom (teach-back, raised hands, spoken characters)
-  Phase 3 — persistent workspace UI, legible learning-path map, depth
-            calibration and level detection from a writing sample
-  Phase 4 — classroom depth: follow-up questioning, Ask the Master, and a
-            generated classroom backdrop dressed for the subject
+There's no quiz anywhere. Teaching it is the test.
 
 ================================================================
 4. GEN AI SERVICES UTILISED, AND WHERE
+   [paste-ready · 1017/1024 chars]
 ================================================================
-Google Gemini API (generativelanguage.googleapis.com) — the only AI provider.
-All calls run server-side in Next.js route handlers; the API key is stored as
-an encrypted Vercel environment variable and never reaches the browser.
+Google Gemini only. Every call runs server-side in a Next.js route handler; the key is an encrypted env var and never reaches the browser.
 
-MODEL: gemini-3.7-flash — structured JSON output (responseSchema-constrained,
-so responses are guaranteed-parseable rather than prompt-and-hope)
+gemini-3.7-flash (schema-constrained JSON + vision):
+- /api/curriculum - concept map, prerequisites, theory/practical call, level titles, level detection from your writing
+- /api/lesson - builds levels 1-4
+- /api/lesson/steer - adjusts your mental image mid-visualisation
+- /api/concept - each concept's brief and every "go deeper" layer
+- /api/classroom/doubts - the questions the class raises
+- /api/classroom/judge - judges answers in character, returns follow-ups
+- /api/classroom/mentor - the Master's hint
+- /api/assess - grades photographed work or a diagnosis
 
-  /api/curriculum      Breaks a free-text topic into a prerequisite concept
-                       graph, classifies it THEORY / PRACTICAL / HYBRID with a
-                       stated reason, writes five topic-specific level titles
-                       pitched at the requested depth, and — when the learner
-                       pastes a writing sample — judges their real level from
-                       it and seeds per-concept starting mastery.
+gemini-3.1-flash-tts-preview:
+- /api/tts - every character voice and all narration
 
-  All content prompts share one learner-context block (lib/context.ts): the
-  depth register, the level detected from their writing, their interest domain
-  and the live mastery map. So the class interrogates a 10-year-old in
-  10-year-old terms and an undergraduate in formal ones, from the same
-  explanation.
+gemini-3.1-flash-image:
+- /api/room - the classroom, dressed for your subject
+- /api/lesson/sketch - the chalk drawings on the board
+- build time - the students' sprite sheets
 
-  /api/classroom/doubts Reads the learner's spoken explanation together with
-                       their current mastery values and generates the questions
-                       the class raises — each assigned to the character whose
-                       probe style fits, tagged with a severity and the concept
-                       it targets.
+Nothing is mocked. Every output is a live call.
 
-  /api/classroom/mentor Teaches the learner when they are stuck on a student's
-                       question: a depth-matched explanation, the key points
-                       their answer must contain, and the usual misconception.
-                       Text only, and it never answers the student for them.
-
-  /api/classroom/judge  Judges the learner's answer in the character's own
-                       voice and, when the answer misses, returns the follow-up
-                       that same character presses with — narrowed onto the
-                       exact gap. The verdict is what moves the concept map.
-                       Follow-ups ride back in the same response, so the
-                       back-and-forth needs no sockets and no extra latency;
-                       session state lives client-side and the server stays
-                       stateless.
-
-MODEL: gemini-3.1-flash-image — image generation ("Nano Banana")
-
-  /api/room            Generates the classroom itself, dressed for the subject
-                       being taught and routed by topic type: a theory topic
-                       gets a lecture hall with a chalkboard sketched in that
-                       subject's diagrams, a practical topic gets a workshop
-                       with the relevant tools and a pinned instruction board.
-                       Generated on entry and faded in behind the students;
-                       purely atmospheric, so a failure never blocks the class.
-
-MODEL: gemini-3.1-flash-tts-preview — text to speech
-
-  /api/tts             Speaks every character line in a distinct prebuilt
-                       voice with a per-character delivery direction. Gemini
-                       returns raw 24kHz PCM, which is wrapped in a WAV header
-                       server-side so the browser can play it.
-
-MODEL: gemini-3.7-flash (vision) — verified working, wired in Phase 4
-
-  /api/assess/vision   Camera proof-of-work for practical topics: the learner
-                       photographs their attempt and Gemini grades it against
-                       a rubric, naming the step that failed.
-
-Browser Web Speech API is used for speech-to-text only (not a Gen AI service);
-a typed fallback is always available since it is Chrome-only.
-
-ERROR HANDLING AND GUARDRAILS
-
-Failures are typed rather than generic. lib/gemini.ts inspects promptFeedback,
+================================================================
+ERROR HANDLING, GUARDRAILS AND ACCESSIBILITY
+================================================================
+Failures are typed, not generic. lib/gemini.ts inspects promptFeedback,
 finishReason and HTTP status and raises a GeminiError carrying a kind
 (blocked / recitation / rate_limited / timeout / config / unavailable), a
 message written for the learner, and a retryable flag. Safety blocks name the
 category that tripped where the API reports it.
 
-Two layers cover refusals. The curriculum call asks Gemini to decide first
-whether a topic is teachable and, if not, to return a plain reason and a
-legitimate neighbouring subject — so the learner is told what the problem is
-instead of watching a request fail. Hard safety blocks are caught separately
-and surfaced with an honest explanation.
+Three verdicts on intake. TEACHABLE builds the course. DECLINED refuses on
+policy grounds with a stated reason and no retry offered, because retrying a
+policy refusal cannot succeed. UNINTELLIGIBLE rejects input that is not a
+recognisable subject — keyboard mashing — because inventing a plausible course
+from gibberish would be fabricating content. A merely vague subject still
+builds.
 
-Three verdicts, not two. TEACHABLE builds the course. DECLINED refuses on
-policy grounds with a stated reason. UNINTELLIGIBLE rejects input that is not
-a recognisable subject at all — keyboard mashing and random characters — 
-because guessing a plausible course out of gibberish would be fabricating
-content, which is exactly what the rules prohibit. A merely vague subject
-("science") is not unintelligible and still builds.
+The rule the prompt enforces: refuse on what the learner asks you to enable,
+never on whether the subject is uncomfortable. Verified — meth synthesis is
+declined; amphetamine pharmacology and the Holocaust both build normally.
 
-The distinction the prompt enforces: refuse on what the learner is asking to
-enable, not on whether the subject is uncomfortable. Verified — "how to
-synthesise methamphetamine at home" is declined, while "the pharmacology of
-amphetamines" and "the Holocaust" both build normally.
+Voice, the classroom backdrop and the chalk sketches all fail soft. Losing any
+of them never blocks a lesson.
 
-Refusals render as a settled outcome and never offer a retry, because
-retrying a policy decline cannot succeed. Only genuinely transient failures
-invite one. Voice and the generated classroom backdrop fail soft — losing
-either never blocks the lesson.
+Accessibility: every Framer Motion loop is gated on useReducedMotion, because
+the CSS prefers-reduced-motion block only ever reached CSS animations while
+waving hands and pulsing rings ran regardless. Live regions announce
+everything that arrives from a network call. The concept drawer is a real
+modal with focus moved in, focus returned on close, and background scroll
+locked. Quiz options are a radiogroup; diagrams carry descriptions; form hints
+are associated via aria-describedby; there is a skip link and a main landmark
+on every page.
 
-NOTHING IN THE APP IS MOCKED OR HARDCODED. Every concept graph, level title,
-question, character reply and mastery change is produced by a live Gemini call
-at runtime.
+Design system: four learner-selectable themes differing on paper band and
+accent hue, defaulting to light. Every colour is a named token — the codebase
+contains no raw colour values at the point of use.
