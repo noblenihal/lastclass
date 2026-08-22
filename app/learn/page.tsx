@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Check, ChevronLeft, Lock } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, ChevronDown, ChevronLeft, Lock } from "lucide-react";
 import { useAuth, useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
 import { RUNG_BLURB, RUNG_LABEL, type Level } from "@/lib/types";
@@ -23,6 +23,29 @@ export default function LearnPage() {
   const { profile: p } = useAuth();
   const router = useRouter();
   const [selected, setSelected] = useState<number | null>(null);
+  /** The roadmap is tall; collapsing it keeps the active level in reach. */
+  const [mapOpen, setMapOpen] = useState(true);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("lastclass:mapOpen");
+      if (saved !== null) setMapOpen(saved === "1");
+    } catch {
+      /* storage unavailable — default to open */
+    }
+  }, []);
+
+  function toggleMap() {
+    setMapOpen((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem("lastclass:mapOpen", next ? "1" : "0");
+      } catch {
+        /* storage unavailable — the choice lasts for this view */
+      }
+      return next;
+    });
+  }
 
   const overall = useMemo(() => {
     if (!session?.concepts.length) return 0;
@@ -49,6 +72,7 @@ export default function LearnPage() {
   if (!session) return null;
 
   const done = session.levels.filter((l) => l.passed).length;
+  const mastered = session.concepts.filter((c) => c.mastery >= 0.8).length;
   const current =
     session.levels.find((l) => !l.passed && l.unlocked) ?? session.levels[4];
   const shown = session.levels.find((l) => l.n === selected) ?? current;
@@ -132,13 +156,55 @@ export default function LearnPage() {
           )}
           <Reveal>
             <section aria-label="Roadmap">
-              <div className="rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/40 px-4 py-5 sm:px-5">
-                <Roadmap
-                  concepts={session.concepts}
-                  topic={session.topic}
-                  level={session.detectedLevel ?? session.statedLevel}
-                  interest={session.interest || undefined}
-                />
+              <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/40">
+                <button
+                  onClick={toggleMap}
+                  aria-expanded={mapOpen}
+                  aria-controls="roadmap-body"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-paper-3)]/50 sm:px-5"
+                >
+                  <motion.span
+                    animate={{ rotate: mapOpen ? 0 : -90 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className="shrink-0 text-[var(--color-ink-3)]"
+                  >
+                    <ChevronDown size={16} />
+                  </motion.span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[var(--text-base)] font-medium text-[var(--color-ink)]">
+                      Your roadmap
+                    </span>
+                    {!mapOpen && (
+                      <span className="block text-[var(--text-sm)] text-[var(--color-ink-3)]">
+                        {mastered} of {session.concepts.length} stops mastered
+                      </span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-[var(--text-sm)] text-[var(--color-ink-3)]">
+                    {mapOpen ? "Hide" : "Show"}
+                  </span>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {mapOpen && (
+                    <motion.div
+                      id="roadmap-body"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div className="px-4 pb-5 sm:px-5">
+                        <Roadmap
+                          concepts={session.concepts}
+                          topic={session.topic}
+                          level={session.detectedLevel ?? session.statedLevel}
+                          interest={session.interest || undefined}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </section>
           </Reveal>
