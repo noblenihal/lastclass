@@ -34,8 +34,12 @@ export function Whiteboard({
   const [playing, setPlaying] = useState(false);
   const [loadingAudio, setLoadingAudio] = useState(false);
   const [seen, setSeen] = useState<Set<number>>(new Set([0]));
+  /** How many beats already have audio in hand. */
+  const [ready, setReady] = useState(0);
 
   const cache = useRef<Map<number, string>>(new Map());
+  /** Dedupes concurrent requests for the same beat. */
+  const inflight = useRef<Map<number, Promise<string | null>>>(new Map());
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playToken = useRef(0);
 
@@ -46,6 +50,8 @@ export function Whiteboard({
       if (cache.current.has(idx)) return cache.current.get(idx)!;
       const b = beats[idx];
       if (!b) return null;
+      if (inflight.current.has(idx)) return inflight.current.get(idx)!;
+      const job = (async () => {
       try {
         const res = await fetch("/api/tts", {
           method: "POST",
@@ -60,10 +66,14 @@ export function Whiteboard({
         if (!res.ok) return null;
         const url = URL.createObjectURL(await res.blob());
         cache.current.set(idx, url);
+        setReady((r) => r + 1);
         return url;
       } catch {
         return null;
       }
+      })();
+      inflight.current.set(idx, job);
+      return job;
     },
     [beats],
   );
@@ -114,6 +124,30 @@ export function Whiteboard({
     },
     [beats.length, fetchAudio, onFinished],
   );
+
+  /**
+   * Warms every beat's narration the moment the script arrives, three at a
+   * time. The bottleneck in an explainer is not generating the script, it is
+   * waiting on speech mid-playback — so all of it is fetched up front and the
+   * board never stalls between beats.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const queue = beats.map((_, k) => k);
+      const workers = Array.from({ length: 3 }, async () => {
+        while (!cancelled) {
+          const next = queue.shift();
+          if (next === undefined) return;
+          await fetchAudio(next);
+        }
+      });
+      await Promise.all(workers);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [beats, fetchAudio]);
 
   useEffect(() => stopAudio, [stopAudio]);
 
@@ -207,6 +241,12 @@ export function Whiteboard({
         >
           <SkipForward size={16} />
         </button>
+
+        {ready < beats.length && (
+          <span className="ml-1 shrink-0 text-[var(--text-xs)] text-[var(--color-ink-3)]">
+            voice {ready}/{beats.length}
+          </span>
+        )}
 
         {/* scrubber: one segment per beat */}
         <div className="ml-2 flex flex-1 gap-1">
