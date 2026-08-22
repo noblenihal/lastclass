@@ -27,6 +27,9 @@ import { Seat, type SeatState } from "@/components/Seat";
 import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
 import { ReportCard } from "@/components/ReportCard";
+import { VoicePad } from "@/components/classroom/VoicePad";
+import { ClassroomStage } from "@/components/classroom/ClassroomStage";
+import { DoubtCard } from "@/components/classroom/DoubtCard";
 import { politeProps, useMotionSafe } from "@/lib/a11y";
 
 type Phase = "explaining" | "taking" | "answering" | "ended";
@@ -409,59 +412,15 @@ export default function ClassroomPage() {
       <div className="mx-auto max-w-[56rem]">
         {/* ---------- the room ---------- */}
         <Reveal>
-          <section
-            className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/50 px-3 py-5"
-            aria-label="The classroom"
-          >
-            {/* the room, dressed for this subject */}
-            <AnimatePresence>
-              {room && (
-                <motion.div
-                  key="room"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute inset-0 -z-10 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${room})` }}
-                  aria-hidden="true"
-                />
-              )}
-            </AnimatePresence>
-            {/* scrim keeps the students and text legible over any backdrop */}
-            <div
-              className="absolute inset-0 -z-10"
-              style={{
-                background:
-                  "linear-gradient(to bottom, var(--scrim-top), var(--scrim-bottom))",
-              }}
-              aria-hidden="true"
-            />
-
-            <div className="relative flex justify-center gap-1 sm:gap-3 flex-wrap">
-              {CHARACTERS.map((c) => {
-                const first = doubts.find(
-                  (d) => d.characterId === c.id && d.status === "raised",
-                );
-                return (
-                  <Seat
-                    key={c.id}
-                    character={c}
-                    state={seatState(c.id)}
-                    severity={severityOf(c.id)}
-                    onClick={first ? () => openDoubt(first) : undefined}
-                  />
-                );
-              })}
-            </div>
-            <p
-              {...politeProps()}
-              className="relative mt-4 text-center text-[var(--text-sm)] text-[var(--color-ink-2)]"
-            >
-              {roomStatus}
-            </p>
-          </section>
+          <ClassroomStage
+            room={room}
+            doubts={doubts}
+            status={roomStatus}
+            seatState={seatState}
+            severityOf={severityOf}
+            onOpenDoubt={openDoubt}
+          />
         </Reveal>
-
         {/* ---------- explaining ---------- */}
         {phase === "explaining" && (
           <Reveal delay={0.1}>
@@ -594,235 +553,28 @@ export default function ClassroomPage() {
         {/* ---------- answering one doubt ---------- */}
         <AnimatePresence mode="wait">
           {phase === "answering" && active && (
-            <motion.section
-              key={active.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-8"
-            >
-              <div
-                {...politeProps()}
-                className={
-                  "rounded-[var(--radius-lg)] border p-6 " +
-                  (active.severity === 3
-                    ? "border-[var(--color-urgent)] shadow-[var(--glow-urgent)]"
-                    : "border-[var(--color-accent)] shadow-[var(--glow)]")
-                }
-              >
-                <div className="flex items-start gap-4">
-                  <span className="text-[2rem] leading-none shrink-0">
-                    {byId(active.characterId).emoji}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <span className="flex items-center gap-2 text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
-                      {byId(active.characterId).name}
-                      {speakingId === active.characterId && (
-                        <Volume2
-                          size={13}
-                          aria-label="speaking"
-                          className="text-[var(--color-accent)]"
-                        />
-                      )}
-                    </span>
-                    {(active.depth ?? 0) > 0 && (
-                      <span className="mt-1 inline-block rounded-[var(--radius-pill)] bg-[var(--color-urgent-ghost)] px-2.5 py-0.5 text-[var(--text-xs)] text-[var(--color-urgent)]">
-                        Pressing again · attempt {(active.depth ?? 0) + 1}
-                      </span>
-                    )}
-                    <p className="mt-1.5 text-[var(--text-xl)] leading-snug text-[var(--color-ink)]">
-                      {active.question}
-                    </p>
-                  </div>
-                </div>
-
-                {reply?.id === active.id ? (
-                  <div className="mt-6">
-                    <p className="text-[var(--text-lg)] text-[var(--color-ink-2)] italic">
-                      &ldquo;{reply.text}&rdquo;
-                    </p>
-                    <Button className="mt-5 w-full" onClick={nextDoubt}>
-                      {pending
-                        ? `${byId(pending.characterId).name} isn't satisfied — hear them out`
-                        : doubts.some((d) => d.status === "raised")
-                          ? "Next question"
-                          : "Back to class"}
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {/* the Master's note — read it, then say it yourself */}
-                    {note?.id === active.id && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.32 }}
-                        className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-3)]/50 p-5"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-[1.25rem] leading-none">
-                            {MENTOR.emoji}
-                          </span>
-                          <span className="text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
-                            {MENTOR.name} — for your eyes only
-                          </span>
-                        </div>
-
-                        <p className="mt-3 text-[var(--text-base)] leading-relaxed text-[var(--color-ink)]">
-                          {note.note.answer}
-                        </p>
-
-                        {note.note.keyPoints.length > 0 && (
-                          <div className="mt-4">
-                            <span className="block text-[var(--text-xs)] text-[var(--color-ink-3)] mb-1.5">
-                              Your answer needs to hit
-                            </span>
-                            <ul className="space-y-1">
-                              {note.note.keyPoints.map((k, i) => (
-                                <li
-                                  key={i}
-                                  className="flex gap-2 text-[var(--text-sm)] text-[var(--color-ink-2)]"
-                                >
-                                  <span className="text-[var(--color-accent)]">
-                                    ·
-                                  </span>
-                                  {k}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        <p className="mt-4 text-[var(--text-sm)] text-[var(--color-ink-2)]">
-                          <span className="text-[var(--color-urgent)]">
-                            Watch out:
-                          </span>{" "}
-                          {note.note.watchOut}
-                        </p>
-
-                        <p className="mt-4 pt-4 border-t border-[var(--color-paper-4)] text-[var(--text-sm)] text-[var(--color-ink-3)]">
-                          Now tell {byId(active.characterId).name} yourself — in
-                          your own words, not the Master&apos;s. This one counts
-                          for half.
-                        </p>
-                      </motion.div>
-                    )}
-
-                    <VoicePad
-                      dictation={answer}
-                      typed={typed}
-                      setTyped={setTyped}
-                      placeholder="Type or speak your answer…"
-                    />
-                    <ErrorNote>{error}</ErrorNote>
-                    <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                      <Button onClick={submitAnswer} loading={busy}>
-                        Explain
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={askMaster}
-                        loading={asking}
-                        disabled={busy || Boolean(note?.id === active.id)}
-                      >
-                        <Sparkles size={14} />
-                        {note?.id === active.id ? "Asked" : "Ask the Master"}
-                      </Button>
-                      <Button variant="ghost" onClick={defer} disabled={busy}>
-                        Skip for now
-                      </Button>
-                      <Button variant="quiet" onClick={endClass} disabled={busy}>
-                        End class
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </motion.section>
+            <DoubtCard
+              doubt={active}
+              answer={answer}
+              reply={reply?.id === active.id ? reply.text : null}
+              note={note?.id === active.id ? note.note : null}
+              speaking={speakingId === active.characterId}
+              busy={busy}
+              asking={asking}
+              typed={typed}
+              error={error}
+              hasMoreRaised={doubts.some((d) => d.status === "raised")}
+              pendingFrom={pending ? byId(pending.characterId).name : null}
+              setTyped={setTyped}
+              onExplain={submitAnswer}
+              onAskMaster={askMaster}
+              onDefer={defer}
+              onEndClass={endClass}
+              onNext={nextDoubt}
+            />
           )}
         </AnimatePresence>
       </div>
     </main>
-  );
-}
-
-/* ---------------------------------------------------------------
-   Voice input with an always-available typed fallback. Speech
-   recognition is Chrome-only, so the mic can never be the only door.
-   --------------------------------------------------------------- */
-function VoicePad({
-  dictation,
-  typed,
-  setTyped,
-  placeholder,
-}: {
-  dictation: ReturnType<typeof useDictation>;
-  typed: boolean;
-  setTyped: (v: boolean) => void;
-  placeholder: string;
-}) {
-  const motion$ = useMotionSafe();
-  const useKeyboard = typed || !dictation.supported;
-
-  return (
-    <div className="mt-5">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
-          {useKeyboard ? "Typed" : dictation.listening ? "Listening…" : "Your turn"}
-        </span>
-        <button
-          type="button"
-          onClick={() => setTyped(!typed)}
-          className="flex items-center gap-1.5 text-[var(--text-xs)] text-[var(--color-ink-3)] hover:text-[var(--color-ink)] transition-colors duration-[var(--dur-fast)]"
-        >
-          {useKeyboard ? <Mic size={13} /> : <Keyboard size={13} />}
-          {useKeyboard ? "Use voice" : "Type instead"}
-        </button>
-      </div>
-
-      <textarea
-        value={dictation.transcript}
-        onChange={(e) => dictation.setManual(e.target.value)}
-        placeholder={placeholder}
-        rows={5}
-        className="w-full resize-none rounded-[var(--radius-md)] bg-[var(--color-paper-2)] border border-[var(--color-paper-4)] px-4 py-3 text-[var(--text-lg)] leading-relaxed text-[var(--color-ink)] placeholder:text-[var(--color-ink-4)] outline-none transition-[border-color,box-shadow] duration-[var(--dur-fast)] focus:border-[var(--color-accent)] focus:shadow-[var(--glow)]"
-      />
-
-      {!useKeyboard && (
-        <div className="mt-2 flex items-center gap-3">
-          <Button
-            variant={dictation.listening ? "ghost" : "solid"}
-            onClick={dictation.listening ? dictation.stop : dictation.start}
-            className="!px-4 !py-2"
-          >
-            {dictation.listening ? <MicOff size={14} /> : <Mic size={14} />}
-            {dictation.listening ? "Stop" : "Speak"}
-          </Button>
-          {dictation.listening && (
-            <span className="flex items-center gap-1" aria-hidden="true">
-              {[0, 1, 2].map((i) => (
-                <motion.span
-                  key={i}
-                  animate={{ scaleY: [0.4, 1, 0.4] }}
-                  transition={{
-                    duration: 0.9,
-                    repeat: motion$.repeat(),
-                    delay: i * 0.15,
-                    ease: "easeInOut",
-                  }}
-                  className="block h-4 w-[3px] rounded-full bg-[var(--color-accent)]"
-                />
-              ))}
-            </span>
-          )}
-          {dictation.error && (
-            <span className="text-[var(--text-sm)] text-[var(--color-urgent)]">
-              {dictation.error}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
   );
 }

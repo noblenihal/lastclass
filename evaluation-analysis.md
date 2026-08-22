@@ -79,14 +79,21 @@ what the class asks you.
 
 ## Where the points actually are
 
-The six categories are not weighted equally. Solving against the reported
-85.08 gives approximately:
+The organiser's own slide confirms the weighting, and solving against the
+reported 85.08 gives the numbers behind it:
 
-- **High** — Code Quality, Problem Alignment · ~26.5% each
-- **Medium** — Security, Efficiency · ~16.75% each
-- **Low** — Testing, Accessibility · ~6.75% each
+| Weight | Categories | Approx. share each |
+|---|---|---|
+| **High** | Code Quality, Problem Statement Alignment | ~26.5% |
+| **Medium** | Security, Efficiency | ~16.75% |
+| **Low** | Testing, Accessibility | ~6.75% |
 
 (86×.265 + 98×.265 + 98×.1675 + 80×.1675 + 0×.0675 + 96×.0675 ≈ 85.05)
+
+The slide is explicit that the final score is the **sum of all six — no
+category is ignored**, and that when scores are close, *"Testing and
+Accessibility are what separate you from the next rank."* That is exactly why
+a low-weight zero was still the single most valuable thing to fix.
 
 That changes the priority order:
 
