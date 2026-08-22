@@ -6,12 +6,18 @@ import { useAuth } from "@/lib/auth";
 import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Field, Reveal } from "@/components/ui";
 
-const DEMO = { name: "Evaluator", email: "demo@lastclass.app", pass: "lastclass" };
+const DEMO = { email: "demo@lastclass.app", pass: "lastclass" };
+
+/** The class needs something to call you; the local part of the email does. */
+function nameFromEmail(email: string): string {
+  const local = email.split("@")[0] ?? "";
+  const first = local.split(/[._\-+0-9]+/).filter(Boolean)[0] ?? local;
+  return first ? first[0].toUpperCase() + first.slice(1).toLowerCase() : "Guest";
+}
 
 export default function LoginPage() {
   const { profile, ready, signIn } = useAuth();
   const router = useRouter();
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
@@ -20,11 +26,13 @@ export default function LoginPage() {
     if (ready && profile) router.replace("/");
   }, [ready, profile, router]);
 
-  function enter(p: { name: string; email: string; pass: string }) {
-    if (!p.name.trim()) return setError("We need a name — the room will call you by it.");
-    if (!/^\S+@\S+\.\S+$/.test(p.email)) return setError("That email doesn't look right.");
-    if (p.pass.length < 4) return setError("Password needs at least 4 characters.");
-    signIn({ name: p.name.trim(), email: p.email.trim(), interest: "" });
+  function enter(p: { email: string; pass: string }) {
+    const mail = p.email.trim();
+    if (!/^\S+@\S+\.\S+$/.test(mail))
+      return setError("That email doesn't look right.");
+    if (p.pass.length < 4)
+      return setError("Password needs at least 4 characters.");
+    signIn({ name: nameFromEmail(mail), email: mail, interest: "" });
     router.replace("/");
   }
 
@@ -54,19 +62,12 @@ export default function LoginPage() {
           onSubmit={(e) => {
             e.preventDefault();
             setError("");
-            enter({ name, email, pass });
+            enter({ email, pass });
           }}
         >
           <Field
-            label="Name"
-            hint="The class will call you by this."
-            placeholder="Ankit"
-            value={name}
-            autoComplete="name"
-            onChange={(e) => setName(e.target.value)}
-          />
-          <Field
             label="Email"
+            hint="The class will call you by the first part of your address."
             type="email"
             placeholder="you@example.com"
             value={email}
