@@ -14,6 +14,8 @@ const Body = z.object({
   lookingFor: z.string().trim().min(1).max(600),
   answer: z.string().trim().min(1).max(4000),
   level: z.enum(["BASIC", "MEDIUM", "ADVANCED"]).default("MEDIUM"),
+  /** How many times this student has already pressed on this point. */
+  depth: z.number().int().min(0).max(3).default(0),
 });
 
 const schema = {
@@ -26,8 +28,19 @@ const schema = {
     reply: { type: "string" },
     /** What was still missing, shown to the learner in the report card. */
     gap: { type: "string" },
+    /** A narrower re-ask when the answer missed. Empty string if resolved. */
+    follow_up: { type: "string" },
+    /** What the follow-up needs in order to be satisfied. */
+    follow_up_looking_for: { type: "string" },
   },
-  required: ["resolved", "quality", "reply", "gap"],
+  required: [
+    "resolved",
+    "quality",
+    "reply",
+    "gap",
+    "follow_up",
+    "follow_up_looking_for",
+  ],
 };
 
 export async function POST(req: NextRequest) {
@@ -35,8 +48,10 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-  const { topic, characterId, question, lookingFor, answer, level } =
+  const { topic, characterId, question, lookingFor, answer, level, depth } =
     parsed.data;
+  // Two follow-ups is pressing; a third is badgering.
+  const mayPress = depth < 2;
   const character = byId(characterId);
 
   try {
@@ -45,6 +60,8 @@ export async function POST(req: NextRequest) {
       quality: number;
       reply: string;
       gap: string;
+      follow_up: string;
+      follow_up_looking_for: string;
     }>({
       system:
         `You are ${character.name} the ${character.species}, a student in a ` +
@@ -78,14 +95,37 @@ ${
 - reply: what you say back out loud, in character, under 25 words. If
   resolved, react like a student who just got it. If not, say what still
   confuses you — don't just repeat the question.
-- gap: one short sentence naming what was missing (empty string if resolved).`,
+- gap: one short sentence naming what was missing (empty string if resolved).
+- follow_up: ${
+      mayPress
+        ? `if NOT resolved, the narrower question you ask next. Do not repeat
+  your original question — zero in on the exact thing they got wrong or
+  skipped, and make it easier to answer than the first one. Under 30 words,
+  in character, spoken aloud. Empty string if resolved.`
+        : `always an empty string — you have already pressed twice and will
+  let this go.`
+    }
+- follow_up_looking_for: what that follow-up needs in order to satisfy you.
+  Empty string if there is no follow-up.`,
       schema,
       temperature: 0.7,
     });
 
+    const followUp =
+      !verdict.resolved && mayPress && verdict.follow_up?.trim()
+        ? {
+            question: verdict.follow_up.trim(),
+            lookingFor:
+              verdict.follow_up_looking_for?.trim() || verdict.gap || lookingFor,
+          }
+        : null;
+
     return NextResponse.json({
-      ...verdict,
+      resolved: verdict.resolved,
       quality: Math.min(1, Math.max(0, verdict.quality)),
+      reply: verdict.reply,
+      gap: verdict.gap,
+      followUp,
     });
   } catch (err) {
     console.error("[judge]", err);

@@ -45,6 +45,8 @@ export default function ClassroomPage() {
     null,
   );
   const [asking, setAsking] = useState(false);
+  /** A follow-up the current character is about to press with. */
+  const [pending, setPending] = useState<Doubt | null>(null);
 
   const dictation = useDictation();
   const answer = useDictation();
@@ -182,6 +184,7 @@ export default function ClassroomPage() {
           lookingFor: active.lookingFor,
           answer: text,
           level: session.detectedLevel ?? session.statedLevel,
+          depth: active.depth ?? 0,
         }),
       });
       const data = await res.json();
@@ -189,6 +192,9 @@ export default function ClassroomPage() {
 
       const resolved = Boolean(data.resolved);
       const quality = Number(data.quality) || 0;
+      const followUp = data.followUp as
+        | { question: string; lookingFor: string }
+        | null;
 
       setDoubts((prev) =>
         prev.map((d) =>
@@ -209,6 +215,25 @@ export default function ClassroomPage() {
       setSpeakingId(c.id);
       await speaker.speak(data.reply, c.voice, c.direction);
       setSpeakingId(null);
+
+      // A student who isn't satisfied doesn't move on — they press harder,
+      // narrowing onto the exact thing that was missing.
+      if (!resolved && followUp) {
+        const press: Doubt = {
+          id: `${active.id}-f${(active.depth ?? 0) + 1}`,
+          characterId: active.characterId,
+          question: followUp.question,
+          severity: active.severity,
+          conceptId: active.conceptId,
+          lookingFor: followUp.lookingFor,
+          status: "raised",
+          depth: (active.depth ?? 0) + 1,
+          assisted: active.assisted,
+        };
+        askedRef.current.push(press.question);
+        setDoubts((prev) => [...prev, press]);
+        setPending(press);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something broke.");
     } finally {
@@ -250,7 +275,8 @@ export default function ClassroomPage() {
   }
 
   function nextDoubt() {
-    const next = doubts.find((d) => d.status === "raised");
+    const next = pending ?? doubts.find((d) => d.status === "raised");
+    setPending(null);
     setReply(null);
     setNote(null);
     answer.reset();
@@ -470,6 +496,11 @@ export default function ClassroomPage() {
                         <Volume2 size={13} className="text-[var(--color-accent)]" />
                       )}
                     </span>
+                    {(active.depth ?? 0) > 0 && (
+                      <span className="mt-1 inline-block rounded-[var(--radius-pill)] bg-[var(--color-urgent-ghost)] px-2.5 py-0.5 text-[var(--text-xs)] text-[var(--color-urgent)]">
+                        Pressing again · attempt {(active.depth ?? 0) + 1}
+                      </span>
+                    )}
                     <p className="mt-1.5 text-[var(--text-xl)] leading-snug text-[var(--color-ink)]">
                       {active.question}
                     </p>
@@ -482,9 +513,11 @@ export default function ClassroomPage() {
                       &ldquo;{reply.text}&rdquo;
                     </p>
                     <Button className="mt-5 w-full" onClick={nextDoubt}>
-                      {doubts.some((d) => d.status === "raised")
-                        ? "Next question"
-                        : "Back to class"}
+                      {pending
+                        ? `${byId(pending.characterId).name} isn't satisfied — hear them out`
+                        : doubts.some((d) => d.status === "raised")
+                          ? "Next question"
+                          : "Back to class"}
                     </Button>
                   </div>
                 ) : (

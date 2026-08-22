@@ -30,7 +30,7 @@ export interface LearnerContext {
   level: LearnerLevel;
   detectedLevel?: LearnerLevel;
   levelEvidence?: string;
-  interest: string;
+  interest?: string;
   concepts: { id: string; name: string; gist: string; mastery: number }[];
 }
 
@@ -59,9 +59,13 @@ export function learnerContext(ctx: LearnerContext): string {
 Topic: "${ctx.topic}"
 Depth register: ${effective}. ${DEPTH_RULE[effective]}${mismatch}
 
-Their interest domain is "${ctx.interest}". When an analogy would help, build
-it out of that domain rather than a generic one — but never force one where a
-plain explanation is clearer.
+${
+  ctx.interest
+    ? `Their interest domain is "${ctx.interest}". When an analogy would help,
+build it out of that domain rather than a generic one — but never force one
+where a plain explanation is clearer.`
+    : "They have not named an interest domain. Do not reach for analogies to a hobby you have not been told about."
+}
 
 Current state of their knowledge map:
 ${

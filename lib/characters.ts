@@ -132,4 +132,6 @@ export interface Doubt {
   status: "raised" | "deferred" | "resolved" | "fumbled";
   /** True once the learner consulted the Master on this one. */
   assisted?: boolean;
+  /** 0 = the original question, 1+ = the character pressing harder. */
+  depth?: number;
 }

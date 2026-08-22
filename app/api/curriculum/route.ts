@@ -14,7 +14,7 @@ export const maxDuration = 60;
 
 const Body = z.object({
   topic: z.string().trim().min(2).max(160),
-  interest: z.string().trim().min(2).max(80),
+  interest: z.string().trim().max(80).optional().default(""),
   level: z.enum(["BASIC", "MEDIUM", "ADVANCED"]),
   /** Optional writing sample — we read the learner's real level out of it. */
   sample: z.string().trim().max(8000).optional(),
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
         "ladder of understanding, calibrated to how much the learner already " +
         "knows. You never pad — every concept must be load-bearing.",
       prompt: `Topic the learner wants to master: "${topic}"
-Their interest domain (used later for analogies): "${interest}"
+${interest ? `Their interest domain (used later for analogies): "${interest}"` : "They have not named an interest domain yet — do not invent analogies to one."}
 Depth the learner asked for: ${level}
 ${LEVEL_BRIEF[level]}
 
@@ -201,7 +201,9 @@ Titles should sound like a real teacher wrote them. Be specific, never generic.`
         rung,
         title: match?.title ?? rung,
         conceptIds: ids.length ? ids : concepts.map((c) => c.id),
-        unlocked: i === 0,
+        // Rungs 2-4 are roadmap in this build, so they must not gate the
+        // classroom. Watch and Teach are the two playable rungs.
+        unlocked: i === 0 || rung === "Teach",
         passed: false,
       };
     });

@@ -17,12 +17,11 @@ import { Button, ErrorNote, Eyebrow, Field, Reveal } from "@/components/ui";
 
 export default function HomePage() {
   const profile = useRequireProfile();
-  const { signOut, update } = useAuth();
+  const { signOut } = useAuth();
   const { session, setSession } = useSession();
   const router = useRouter();
 
   const [topic, setTopic] = useState("");
-  const [interest, setInterest] = useState("");
   const [level, setLevel] = useState<LearnerLevel>("BASIC");
   const [sample, setSample] = useState("");
   const [showSample, setShowSample] = useState(false);
@@ -35,8 +34,6 @@ export default function HomePage() {
     e.preventDefault();
     setError("");
     if (topic.trim().length < 2) return setError("Enter a topic first.");
-    if (interest.trim().length < 2)
-      return setError("Enter a hobby or interest so we can build analogies.");
 
     setBusy(true);
     try {
@@ -45,14 +42,12 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topic: topic.trim(),
-          interest: interest.trim(),
           level,
           sample: sample.trim() || undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
-      update({ interest: interest.trim() });
       setSession(data.session as Session);
       router.push("/learn");
     } catch (err) {
@@ -101,13 +96,6 @@ export default function HomePage() {
                   placeholder="Recursion, photosynthesis, tying a bowline…"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                />
-                <Field
-                  label="A hobby or interest of yours"
-                  hint="We use this to explain hard parts with analogies you'll get."
-                  placeholder="Cricket, cooking, Formula 1…"
-                  value={interest}
-                  onChange={(e) => setInterest(e.target.value)}
                 />
 
                 {/* how much they already know */}

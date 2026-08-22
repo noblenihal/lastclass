@@ -51,6 +51,8 @@ export default function LearnPage() {
   const current =
     session.levels.find((l) => !l.passed && l.unlocked) ?? session.levels[4];
   const shown = session.levels.find((l) => l.n === selected) ?? current;
+  // Sessions saved before Teach was ungated would otherwise strand the learner.
+  const enterable = shown.unlocked || shown.rung === "Teach";
 
   return (
     <main className="flex-1 flex flex-col">
@@ -140,14 +142,14 @@ export default function LearnPage() {
               <div
                 className={
                   "rounded-[var(--radius-lg)] border p-6 " +
-                  (shown.unlocked
+                  (enterable
                     ? "border-[var(--color-accent)] shadow-[var(--glow)]"
                     : "border-[var(--color-paper-4)]")
                 }
               >
                 <span className="text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
                   Level {shown.n} · {RUNG_LABEL[shown.rung]}
-                  {!shown.unlocked && " · Locked"}
+                  {!enterable && " · Locked"}
                 </span>
                 <h3
                   className="mt-1.5 font-semibold tracking-[-0.02em] leading-snug text-balance"
@@ -160,7 +162,7 @@ export default function LearnPage() {
                 </p>
 
                 <div className="mt-5">
-                  {!shown.unlocked ? (
+                  {!enterable ? (
                     <p className="text-[var(--text-sm)] text-[var(--color-ink-3)]">
                       Finish level {shown.n - 1} to unlock this.
                     </p>
@@ -168,6 +170,8 @@ export default function LearnPage() {
                     <Button onClick={() => router.push("/classroom")}>
                       Enter the classroom
                     </Button>
+                  ) : shown.rung === "Understand" ? (
+                    <InterestCapture />
                   ) : (
                     <p className="text-[var(--text-sm)] text-[var(--color-ink-3)]">
                       This level is being built. Level 5 is playable now —
@@ -208,6 +212,73 @@ export default function LearnPage() {
   );
 }
 
+/**
+ * Asked here rather than at intake, because this is the level where it's
+ * actually used — the payoff is one line away instead of three screens back.
+ * Saved to the profile too, so returning learners are only asked once.
+ */
+function InterestCapture() {
+  const { session, setSession } = useSession();
+  const { profile, update } = useAuth();
+  const [value, setValue] = useState(profile?.interest ?? "");
+  const saved = session?.interest ?? "";
+
+  function save() {
+    const v = value.trim();
+    if (v.length < 2 || !session) return;
+    update({ interest: v });
+    setSession({ ...session, interest: v });
+  }
+
+  if (saved) {
+    return (
+      <div>
+        <p className="text-[var(--text-sm)] text-[var(--color-ink-2)]">
+          We&apos;ll build this level&apos;s comparisons out of{" "}
+          <strong className="font-medium text-[var(--color-accent)]">
+            {saved}
+          </strong>
+          .
+        </p>
+        <button
+          onClick={() => session && setSession({ ...session, interest: "" })}
+          className="mt-1.5 text-[var(--text-sm)] text-[var(--color-ink-3)] hover:text-[var(--color-ink)] transition-colors duration-[var(--dur-fast)]"
+        >
+          Use something else
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label
+        htmlFor="interest"
+        className="block text-[var(--text-base)] font-medium text-[var(--color-ink)]"
+      >
+        What do you already know well?
+      </label>
+      <p className="mt-1 mb-3 text-[var(--text-sm)] text-[var(--color-ink-3)] leading-relaxed">
+        This level explains the hard parts by comparing them to something
+        familiar. Name a hobby, a job, a sport — anything you understand deeply.
+      </p>
+      <div className="flex gap-2 flex-wrap">
+        <input
+          id="interest"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && save()}
+          placeholder="Cricket, cooking, Formula 1…"
+          className="flex-1 min-w-[12rem] rounded-[var(--radius-md)] bg-[var(--color-paper-2)] border border-[var(--color-paper-4)] px-4 py-2.5 text-[var(--text-base)] text-[var(--color-ink)] placeholder:text-[var(--color-ink-4)] outline-none transition-[border-color,box-shadow] duration-[var(--dur-fast)] focus:border-[var(--color-accent)] focus:shadow-[var(--glow)]"
+        />
+        <Button onClick={save} disabled={value.trim().length < 2}>
+          Save
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function RailItem({
   level,
   active,
@@ -217,7 +288,7 @@ function RailItem({
   active: boolean;
   onSelect: () => void;
 }) {
-  const locked = !level.unlocked;
+  const locked = !level.unlocked && level.rung !== "Teach";
 
   return (
     <li className="shrink-0 lg:shrink">
