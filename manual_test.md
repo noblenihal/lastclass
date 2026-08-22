@@ -1,6 +1,6 @@
 # LastClass — manual test guide
 
-Live: https://promptwar-private-73ez741pq-nihal-guptas-projects.vercel.app
+Live: https://promptwar-private-11kn7rr42-nihal-guptas-projects.vercel.app
 
 > Use **Chrome**. Speech recognition is Chrome-only — every screen has a
 > "Type instead" toggle, so nothing is blocked without a mic, but the voice
