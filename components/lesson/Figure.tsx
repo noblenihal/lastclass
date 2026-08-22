@@ -404,7 +404,10 @@ export function Figure({ figure }: { figure: FigureData }) {
       </svg>
 
       {figure.caption && (
-        <figcaption className="mt-1 text-center text-[var(--text-sm)] text-[oklch(80%_0.02_85)]">
+        <figcaption
+          className="mt-1 text-center text-[var(--text-sm)]"
+          style={{ color: "oklch(84% 0.025 85)" }}
+        >
           {figure.caption}
         </figcaption>
       )}

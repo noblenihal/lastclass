@@ -7,7 +7,7 @@ import { Check, ChevronLeft, Lock } from "lucide-react";
 import { useAuth, useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
 import { RUNG_BLURB, RUNG_LABEL, type Level } from "@/lib/types";
-import { MasteryGraph } from "@/components/MasteryGraph";
+import { Roadmap } from "@/components/Roadmap";
 import { ThemePicker } from "@/components/ThemePicker";
 import { Button, Reveal } from "@/components/ui";
 
@@ -123,18 +123,22 @@ export default function LearnPage() {
 
         {/* ---------- the map, always on screen ---------- */}
         <div className="px-5 py-6 sm:px-8">
+          {session.depthNote && (
+            <Reveal>
+              <p className="mb-4 rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/60 px-4 py-3 text-[var(--text-sm)] leading-relaxed text-[var(--color-ink-2)]">
+                {session.depthNote}
+              </p>
+            </Reveal>
+          )}
           <Reveal>
-            <section aria-label="Concept map">
-              <div className="flex items-baseline justify-between gap-4 mb-3">
-                <h2 className="text-[var(--text-sm)] font-medium text-[var(--color-ink)]">
-                  Your concept map
-                </h2>
-                <span className="text-[var(--text-xs)] text-[var(--color-ink-3)]">
-                  Updates as you learn
-                </span>
-              </div>
-              <div className="rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/40 px-4 py-5">
-                <MasteryGraph concepts={session.concepts} />
+            <section aria-label="Roadmap">
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/40 px-4 py-5 sm:px-5">
+                <Roadmap
+                  concepts={session.concepts}
+                  topic={session.topic}
+                  level={session.detectedLevel ?? session.statedLevel}
+                  interest={session.interest || undefined}
+                />
               </div>
             </section>
           </Reveal>

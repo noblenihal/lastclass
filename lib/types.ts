@@ -111,6 +111,8 @@ export interface Session {
   detectedLevel?: LearnerLevel;
   /** Why the sample was read that way — shown back to the learner. */
   levelEvidence?: string;
+  /** Set when the topic tops out below the depth that was requested. */
+  depthNote?: string;
   concepts: Concept[];
   levels: Level[];
   createdAt: number;

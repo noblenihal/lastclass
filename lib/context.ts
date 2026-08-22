@@ -12,6 +12,22 @@ import type { LearnerLevel } from "./types";
  * One shared builder keeps that context identical everywhere it is used.
  */
 
+/**
+ * Depth governs how rigorously the topic itself is treated — never which
+ * subject it becomes. "How to make tea" at ADVANCED is water hardness, leaf
+ * grades and steep times by oxidation; it is NOT tea photochemistry, because
+ * that is a different topic wearing the same word.
+ */
+export const STAY_IN_DOMAIN =
+  "Stay inside the topic the learner actually asked about. Depth means more " +
+  "precision, more edge cases and more expert judgement WITHIN that topic — " +
+  "never substituting a neighbouring academic discipline for it. Many topics " +
+  "have a natural ceiling: an everyday practical task tops out at expert " +
+  "practitioner craft, not at the science underlying it. If the topic's " +
+  "ceiling sits below the depth requested, teach it at its own ceiling rather " +
+  "than escalating into another field. The learner can always ask to go " +
+  "further.";
+
 export const DEPTH_RULE: Record<LearnerLevel, string> = {
   BASIC:
     "Everyday words only. No formulas, no symbols, no technical vocabulary. " +
@@ -22,7 +38,9 @@ export const DEPTH_RULE: Record<LearnerLevel, string> = {
     "but no graduate formalism. Aim at a sharp 16-year-old.",
   ADVANCED:
     "University register. Full rigour, formal vocabulary, edge cases and " +
-    "competing models are all fair game. Do not over-explain basics.",
+    "competing models are all fair game within this topic. Do not " +
+    "over-explain basics — but do not reach into another discipline to " +
+    "manufacture difficulty either.",
 };
 
 export interface LearnerContext {
@@ -57,7 +75,8 @@ export function learnerContext(ctx: LearnerContext): string {
   return `LEARNER CONTEXT — obey all of this.
 
 Topic: "${ctx.topic}"
-Depth register: ${effective}. ${DEPTH_RULE[effective]}${mismatch}
+Depth register: ${effective}. ${DEPTH_RULE[effective]}
+${STAY_IN_DOMAIN}${mismatch}
 
 ${
   ctx.interest

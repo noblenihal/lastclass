@@ -31,6 +31,8 @@ const schema = {
     topic_type: { type: "string", enum: ["THEORY", "PRACTICAL", "HYBRID"] },
     type_reason: { type: "string" },
     detected_level: { type: "string", enum: ["BASIC", "MEDIUM", "ADVANCED"] },
+    /** Set when the topic tops out below the depth that was asked for. */
+    depth_note: { type: "string" },
     level_evidence: { type: "string" },
     concepts: {
       type: "array",
@@ -78,6 +80,7 @@ const schema = {
     "type_reason",
     "detected_level",
     "level_evidence",
+    "depth_note",
     "concepts",
     "levels",
   ],
@@ -90,6 +93,7 @@ interface Raw {
   type_reason: string;
   detected_level: LearnerLevel;
   level_evidence: string;
+  depth_note: string;
   concepts: {
     id: string;
     name: string;
@@ -119,11 +123,32 @@ const LEVEL_BRIEF: Record<LearnerLevel, string> = {
     "places students usually go wrong — but leave out graduate-level " +
     "formalism.",
   ADVANCED:
-    "Pitch this at university level. Full rigour, formal definitions, edge " +
-    "cases, competing models and the subtleties that separate working " +
-    "knowledge from real mastery. Do not waste a concept slot on basics " +
-    "someone at this level already has.",
+    "Pitch this at the level of someone who already knows the topic well and " +
+    "wants expert command of it. Full rigour, precise vocabulary, edge cases, " +
+    "failure modes and the judgement calls that separate competence from " +
+    "mastery. Do not waste a slot on basics they already have.",
 };
+
+/**
+ * The guard against depth turning into topic drift.
+ *
+ * Without this, ADVANCED pushes the model to find harder SUBJECT MATTER, so
+ * "how to make tea" becomes leaf photochemistry — a different topic wearing
+ * the same words. Depth has to deepen the topic, not replace it.
+ */
+const DOMAIN_GUARD = `Critically: depth changes how rigorously you treat THIS topic. It never
+changes which topic it is. Do not reach into an adjacent academic field to
+manufacture difficulty.
+
+"How to make tea" at Advanced means water temperature by leaf type, water
+hardness, steep times, oxidation grades, and the mistakes that ruin a cup —
+expert craft. It does NOT mean photochemistry, polyphenol oxidation pathways
+or leaf cell biology. Someone who asked how to make tea did not ask for
+chemistry, however advanced they are.
+
+Many topics have a natural ceiling below the requested depth. When that
+happens, teach the topic at its own ceiling and say so in depth_note rather
+than inflating it. The learner can ask to go further if they want to.`
 
 export async function POST(req: NextRequest) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
@@ -144,6 +169,8 @@ export async function POST(req: NextRequest) {
 ${interest ? `Their interest domain (used later for analogies): "${interest}"` : "They have not named an interest domain yet — do not invent analogies to one."}
 Depth the learner asked for: ${level}
 ${LEVEL_BRIEF[level]}
+
+${DOMAIN_GUARD}
 
 ${
   hasSample
@@ -209,7 +236,11 @@ If TEACHABLE, set refusal to an empty string and produce:
    one-sentence gist, prereqs listing ids that must come first, plus
    starting_mastery and mastery_reason per the rules above. The graph must be
    acyclic and at least two concepts must have no prereqs.
-4. levels — exactly five, one per rung in this order: Remember, Understand,
+4. depth_note — empty string normally. If this topic genuinely tops out below
+   the depth requested, one plain sentence saying so, e.g. "Making tea tops
+   out at expert brewing craft — going deeper would mean teaching chemistry
+   rather than tea."
+5. levels — exactly five, one per rung in this order: Remember, Understand,
    Internalize, Apply, Teach. Give each a title specific to THIS topic at THIS
    level (not a generic rung name). Assign concept_ids to each level.
 
@@ -292,6 +323,7 @@ Titles should sound like a real teacher wrote them. Be specific, never generic.`
       interest,
       statedLevel: level,
       detectedLevel: raw.detected_level,
+      depthNote: raw.depth_note?.trim() || undefined,
       levelEvidence: raw.level_evidence,
       concepts,
       levels,

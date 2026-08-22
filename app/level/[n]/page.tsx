@@ -134,7 +134,7 @@ export default function LevelPage({
       </header>
 
       <div className="mx-auto max-w-[46rem] pb-16">
-        {loading && <Loading rung={rung} />}
+        {loading && <Loading rung={rung} topic={session.topic} />}
 
         {error && !loading && (
           <div className="space-y-4">
@@ -200,24 +200,60 @@ export default function LevelPage({
   );
 }
 
-function Loading({ rung }: { rung: string }) {
+function Loading({ rung, topic }: { rung: string; topic: string }) {
   const copy: Record<string, string> = {
-    Remember: "Drawing the board…",
-    Understand: "Finding the right comparison…",
-    Internalize: "Setting the scene…",
-    Apply: "Setting your task…",
+    Remember: `Drawing the board for ${topic}`,
+    Understand: `Finding a comparison for ${topic}`,
+    Internalize: `Setting the scene for ${topic}`,
+    Apply: `Setting your task on ${topic}`,
   };
+
+  // Chalk strokes sketching themselves — the wait shows what is being made.
   return (
-    <div className="space-y-4">
-      <p className="text-[var(--color-ink-2)]">{copy[rung]}</p>
-      {[0, 1, 2].map((i) => (
-        <motion.div
-          key={i}
-          className="h-14 rounded-[var(--radius-md)] bg-[var(--color-paper-2)]"
-          animate={{ opacity: [0.4, 0.75, 0.4] }}
-          transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.18 }}
-        />
-      ))}
+    <div className="rounded-[var(--radius-lg)] border-[6px] p-6"
+      style={{
+        borderColor: "oklch(42% 0.055 58)",
+        background: "oklch(23% 0.022 155)",
+      }}
+    >
+      <p
+        className="mb-5 text-center text-[var(--text-base)]"
+        style={{ color: "oklch(84% 0.025 85)" }}
+      >
+        {copy[rung]}
+        <motion.span
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{ duration: 1.4, repeat: Infinity }}
+        >
+          …
+        </motion.span>
+      </p>
+      <svg viewBox="0 0 640 210" className="h-auto w-full" aria-hidden="true">
+        {[
+          "M 60 60 L 250 60 L 250 130 L 60 130 Z",
+          "M 300 95 L 380 95",
+          "M 400 60 L 590 60 L 590 130 L 400 130 Z",
+          "M 120 165 L 520 165",
+        ].map((d, i) => (
+          <motion.path
+            key={i}
+            d={d}
+            fill="none"
+            stroke="oklch(90% 0.04 82)"
+            strokeWidth={2}
+            strokeLinecap="round"
+            initial={{ pathLength: 0, opacity: 0.15 }}
+            animate={{ pathLength: [0, 1, 1, 0], opacity: [0.15, 0.75, 0.75, 0.15] }}
+            transition={{
+              duration: 3.4,
+              times: [0, 0.35, 0.75, 1],
+              repeat: Infinity,
+              delay: i * 0.32,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </svg>
     </div>
   );
 }

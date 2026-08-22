@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Check, Clock, X } from "lucide-react";
 import { byId, type Doubt } from "@/lib/characters";
 import type { Concept } from "@/lib/types";
-import { MasteryGraph } from "@/components/MasteryGraph";
+import { Roadmap } from "@/components/Roadmap";
 import { Button, Eyebrow, Reveal } from "@/components/ui";
 
 /**
@@ -68,7 +68,7 @@ export function ReportCard({
             <h2 className="text-[var(--text-xs)] uppercase tracking-[0.16em] text-[var(--color-ink-3)] mb-5">
               How this class changed your map
             </h2>
-            <MasteryGraph concepts={concepts} />
+            <Roadmap concepts={concepts} topic={topic} level="MEDIUM" />
           </section>
         </Reveal>
 

@@ -177,12 +177,24 @@ export function Whiteboard({
   return (
     <section>
       {/* the board */}
-      <div className="rounded-[var(--radius-lg)] border-[6px] border-[oklch(42%_0.055_58)] bg-[oklch(23%_0.022_155)] p-4 shadow-[inset_0_2px_24px_rgb(0_0_0/0.35)] sm:p-6">
+      <div
+        className="rounded-[var(--radius-lg)] border-[6px] p-4 shadow-[inset_0_2px_24px_rgb(0_0_0/0.35)] sm:p-6"
+        style={{
+          borderColor: "oklch(42% 0.055 58)",
+          background: "oklch(23% 0.022 155)",
+        }}
+      >
         <div className="mb-3 flex items-baseline justify-between gap-3">
-          <span className="font-[family-name:var(--font-mono)] text-[var(--text-xs)] uppercase tracking-[0.16em] text-[oklch(78%_0.05_80)]">
+          <span
+            className="font-[family-name:var(--font-mono)] text-[var(--text-xs)] uppercase tracking-[0.16em]"
+            style={{ color: "oklch(76% 0.05 80)" }}
+          >
             {topic}
           </span>
-          <span className="font-[family-name:var(--font-mono)] text-[var(--text-xs)] text-[oklch(70%_0.03_80)]">
+          <span
+            className="font-[family-name:var(--font-mono)] text-[var(--text-xs)]"
+            style={{ color: "oklch(76% 0.05 80)" }}
+          >
             {i + 1}/{beats.length}
           </span>
         </div>
@@ -195,10 +207,16 @@ export function Whiteboard({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28 }}
           >
-            <h3 className="text-center text-[var(--text-xl)] font-medium text-[oklch(96%_0.02_85)]">
+            <h3
+              className="text-center text-[var(--text-xl)] font-medium"
+              style={{ color: "oklch(96% 0.02 85)" }}
+            >
               {beat.label}
             </h3>
-            <p className="mt-0.5 text-center text-[var(--text-sm)] text-[oklch(80%_0.02_85)]">
+            <p
+              className="mt-0.5 text-center text-[var(--text-sm)]"
+              style={{ color: "oklch(84% 0.025 85)" }}
+            >
               {beat.detail}
             </p>
             <div className="mt-3">
