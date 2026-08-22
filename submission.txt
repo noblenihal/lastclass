@@ -1,0 +1,106 @@
+LASTCLASS — PromptWars submission
+Challenge: Adaptive Learning Intelligence System
+Last updated: after Phase 2 (the Classroom)
+
+================================================================
+1. PUBLIC GITHUB REPOSITORY LINK
+================================================================
+https://github.com/noblenihal/lastclass
+
+  ⚠ ACTION NEEDED: the repo is currently PRIVATE. Before submitting run:
+    gh repo edit noblenihal/lastclass --visibility public --accept-visibility-change-consequences
+
+================================================================
+2. DEPLOYED LINK
+================================================================
+https://promptwar-private-oxe6sc087-nihal-guptas-projects.vercel.app
+
+  Vercel deployment protection is disabled — the URL is publicly reachable.
+  Sign-in screen offers "Continue as evaluator" so every feature is reachable
+  without credentials.
+
+================================================================
+3. DESCRIBE THE CHANGES/UPDATES MADE IN THE DEPLOYED VERSION
+================================================================
+LastClass turns any topic into a five-level climb and ends by making the
+learner teach it to a class that asks questions back.
+
+Enter a topic and a personal interest. Gemini breaks the topic into a
+prerequisite concept graph, classifies it as theory/practical/hybrid, and
+generates five levels titled for that specific topic: Watch, Compare,
+Picture, Do, Teach.
+
+The learner model is a live concept map. Each node carries a mastery value
+that moves only on real evidence of what the learner did — never a preset.
+Brightness encodes mastery; a pulsing rose ring marks a concept the class
+still has questions about.
+
+Level 5 is the Classroom. The learner explains the topic out loud (speech
+recognition, with a typed fallback). Five animal students listen, then raise
+their hands — and the questions are generated from two merged signals: the
+learner's actual transcript, and their weakest nodes on the concept graph.
+Each character probes a different way an explanation fails:
+
+  Bruno (puppy)     — catches undefined jargon
+  Prof. Hoot (owl)  — hunts the uncovered edge case
+  Ria (fox)         — demands a real-world application
+  Tito (tortoise)   — catches the skipped step
+  Kiki (parrot)     — repeats the explanation back with one plausible error
+                      planted in it; the learner passes only by catching it
+
+Each question is spoken aloud in that character's own voice. The learner can
+Explain (answer it), Skip for now (the hand stays up as visible debt), or End
+class. Answers are judged in character, and the verdict moves that concept's
+mastery on the map. Hands still up at the end become the report card and pull
+mastery down. There is no separate quiz anywhere in the product — teaching is
+the assessment.
+
+Built and deployed in phases; every phase is a working, deployed increment.
+  Phase 0 — scaffold, repo, deploy pipeline
+  Phase 1 — concept graph, five-level ladder, live mastery map
+  Phase 2 — the Classroom (teach-back, raised hands, spoken characters)
+
+================================================================
+4. GEN AI SERVICES UTILISED, AND WHERE
+================================================================
+Google Gemini API (generativelanguage.googleapis.com) — the only AI provider.
+All calls run server-side in Next.js route handlers; the API key is stored as
+an encrypted Vercel environment variable and never reaches the browser.
+
+MODEL: gemini-3.7-flash — structured JSON output (responseSchema-constrained,
+so responses are guaranteed-parseable rather than prompt-and-hope)
+
+  /api/curriculum      Breaks a free-text topic into a prerequisite concept
+                       graph, classifies it THEORY / PRACTICAL / HYBRID with a
+                       stated reason, and writes five topic-specific level
+                       titles.
+
+  /api/classroom/doubts Reads the learner's spoken explanation together with
+                       their current mastery values and generates the questions
+                       the class raises — each assigned to the character whose
+                       probe style fits, tagged with a severity and the concept
+                       it targets.
+
+  /api/classroom/judge  Judges the learner's answer in the character's own
+                       voice, returns resolved/quality/reply/gap, and that
+                       verdict is what moves the concept map.
+
+MODEL: gemini-3.1-flash-tts-preview — text to speech
+
+  /api/tts             Speaks every character line in a distinct prebuilt
+                       voice with a per-character delivery direction. Gemini
+                       returns raw 24kHz PCM, which is wrapped in a WAV header
+                       server-side so the browser can play it.
+
+MODEL: gemini-3.7-flash (vision) — verified working, wired in Phase 4
+
+  /api/assess/vision   Camera proof-of-work for practical topics: the learner
+                       photographs their attempt and Gemini grades it against
+                       a rubric, naming the step that failed.
+
+Browser Web Speech API is used for speech-to-text only (not a Gen AI service);
+a typed fallback is always available since it is Chrome-only.
+
+NOTHING IN THE APP IS MOCKED OR HARDCODED. Every concept graph, level title,
+question, character reply and mastery change is produced by a live Gemini call
+at runtime.
