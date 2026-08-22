@@ -1,26 +1,193 @@
+/* Hallmark · genre: atmospheric · theme: custom "Chalk & Ember"
+ * paper: oklch(15% 0.012 55) dark-band · display: geometric-sans (Geist, roman)
+ * accent: warm ember oklch(74% 0.17 58) · secondary: rose (urgency only)
+ * enrichment: E-hand-built (SVG whiteboard, CSS bloom) · scope: app shell
+ */
+
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ---- paper (dark canvas, warm-biased) ---- */
+  --color-paper: oklch(15% 0.012 55);
+  --color-paper-2: oklch(19.5% 0.015 55);
+  --color-paper-3: oklch(25% 0.018 55);
+  --color-paper-4: oklch(31% 0.02 55);
+
+  /* ---- ink (chalk on slate) ---- */
+  --color-ink: oklch(95% 0.006 65);
+  --color-ink-2: oklch(74% 0.011 60);
+  --color-ink-3: oklch(56% 0.013 58);
+  --color-ink-4: oklch(41% 0.014 58);
+
+  /* ---- accent: single warm ember ---- */
+  --color-accent: oklch(74% 0.17 58);
+  --color-accent-hot: oklch(80% 0.19 62);
+  --color-accent-dim: oklch(52% 0.11 55);
+  --color-accent-ghost: oklch(74% 0.17 58 / 0.12);
+
+  /* ---- secondary: rose, urgency only (raised hands, weak nodes) ---- */
+  --color-urgent: oklch(66% 0.19 18);
+  --color-urgent-ghost: oklch(66% 0.19 18 / 0.14);
+
+  /* ---- mastery ramp: rides the accent, never a second hue ---- */
+  --mastery-0: oklch(34% 0.01 58);
+  --mastery-1: oklch(46% 0.07 56);
+  --mastery-2: oklch(58% 0.12 57);
+  --mastery-3: oklch(68% 0.15 58);
+  --mastery-4: oklch(80% 0.19 62);
+
+  /* ---- type ---- */
+  --font-display: var(--font-geist-sans);
+  --font-body: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --text-display: clamp(2.6rem, 5.5vw + 1rem, 5.4rem);
+  --text-display-s: clamp(2rem, 3.6vw + 1rem, 3.4rem);
+  --text-2xl: clamp(1.5rem, 1.4vw + 1rem, 2rem);
+  --text-xl: 1.25rem;
+  --text-lg: 1.0625rem;
+  --text-base: 0.9375rem;
+  --text-sm: 0.8125rem;
+  --text-xs: 0.6875rem;
+
+  /* ---- 4pt space scale ---- */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-pill: 999px;
+
+  /* ---- motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur-mid: 260ms;
+  --dur-slow: 520ms;
+
+  --glow: 0 0 0 1px oklch(74% 0.17 58 / 0.22), 0 8px 40px -8px oklch(74% 0.17 58 / 0.28);
+  --glow-urgent: 0 0 0 1px oklch(66% 0.19 18 / 0.3), 0 8px 40px -8px oklch(66% 0.19 18 / 0.34);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--color-paper);
+  --color-paper-2: var(--color-paper-2);
+  --color-paper-3: var(--color-paper-3);
+  --color-paper-4: var(--color-paper-4);
+  --color-ink: var(--color-ink);
+  --color-ink-2: var(--color-ink-2);
+  --color-ink-3: var(--color-ink-3);
+  --color-ink-4: var(--color-ink-4);
+  --color-accent: var(--color-accent);
+  --color-accent-hot: var(--color-accent-hot);
+  --color-accent-dim: var(--color-accent-dim);
+  --color-urgent: var(--color-urgent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  overflow-x: clip;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------------
+   The room breathes. Two fixed warm blooms behind all content,
+   pulsing on a slow 9s cycle. Pure CSS — no JS animation loop.
+   --------------------------------------------------------------- */
+.room {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      52% 44% at 18% 8%,
+      oklch(74% 0.17 58 / 0.17) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      46% 40% at 88% 92%,
+      oklch(66% 0.19 18 / 0.11) 0%,
+      transparent 70%
+    );
+  animation: breathe 9s var(--ease-in-out) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.82;
+  }
+  50% {
+    transform: scale(1.09);
+    opacity: 1;
+  }
+}
+
+/* chalk grain — hand-built, keeps the dark canvas from reading flat */
+.room::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: var(--color-accent-ghost);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  /* never animated — must appear instantly on focus */
+}
+
+/* scrollbar, quietly */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-paper-4);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+  }
 }
