@@ -1,6 +1,6 @@
 # LastClass — manual test guide
 
-Live: https://promptwar-private-oxe6sc087-nihal-guptas-projects.vercel.app
+Live: https://promptwar-private-8db59kytq-nihal-guptas-projects.vercel.app
 
 > Use **Chrome**. Speech recognition is Chrome-only — every screen has a
 > "Type instead" toggle, so nothing is blocked without a mic, but the voice
@@ -47,16 +47,19 @@ and Tree Traversals"*), never a generic "Level 4: Apply".
 > Try a nonsense topic (`asdfgh`) — you should get a clean error message,
 > not a crash or a fabricated curriculum.
 
-### 1.3 The concept map
+### 1.3 The learning path
 1. Look at the map — it's always on screen, on every level.
-2. **Hover any node.** The caption under the map names the concept, its
-   one-line gist, and its mastery %.
-3. **Expect:**
-   - Nodes sit in **columns by prerequisite depth** — foundational concepts on
-     the left, dependent ones to the right. Curved edges connect them.
-   - Hovering a node lights **its edges** in ember.
-   - Layout is identical on reload (deterministic — it never jitters).
-   - Everything starts dim: mastery is 0 because you haven't proved anything.
+2. **Expect:**
+   - Columns are labelled **Start here → Builds on that → Advanced**, so the
+     left-to-right axis has a stated meaning.
+   - Each circle is **numbered in learning order** — follow 1, 2, 3…
+   - Arrows point *from* a prerequisite *to* what it unlocks.
+   - Each circle has a **ring**: an empty track at 0%, filling with ember as
+     mastery rises. At the start every node reads "not started".
+   - Names wrap onto two lines — nothing is truncated.
+3. **Hover any circle.** The panel below shows its gist and names its
+   prerequisites in plain words ("Needs first: …").
+4. Reload — the layout is identical every time (deterministic, never jitters).
 
 ### 1.4 The level rail
 1. Click through levels 1–5 in the left rail.
