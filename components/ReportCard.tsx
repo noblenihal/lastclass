@@ -66,7 +66,7 @@ export function ReportCard({
         <Reveal delay={0.12}>
           <section className="mt-10 rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/50 p-6">
             <h2 className="text-[var(--text-xs)] uppercase tracking-[0.16em] text-[var(--color-ink-3)] mb-5">
-              What the room did to your map
+              How this class changed your map
             </h2>
             <MasteryGraph concepts={concepts} />
           </section>

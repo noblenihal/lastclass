@@ -304,11 +304,11 @@ export function MasteryGraph({ concepts }: { concepts: Concept[] }) {
           <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[var(--text-sm)] text-[var(--color-ink-3)]">
             <span className="flex items-center gap-1.5">
               <span className="inline-block size-2.5 rounded-full bg-[var(--color-accent)]" />
-              ring fills as you master it
+              ring fills as you prove you know it
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block size-2.5 rounded-full bg-[var(--color-urgent)]" />
-              the class still has questions here
+              shaky — worth another pass
             </span>
             <span className="text-[var(--color-ink-4)]">
               Hover a circle for detail.
