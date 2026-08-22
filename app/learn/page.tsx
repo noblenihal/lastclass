@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
-import { useAuth, useRequireProfile } from "@/lib/auth";
+import { useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
 import { useMotionSafe } from "@/lib/a11y";
 import { LevelRail } from "@/components/LevelRail";

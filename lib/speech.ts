@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 /* Minimal shape of the Web Speech API — it isn't in lib.dom for all targets. */
 interface SpeechRecognitionEventLike {
@@ -37,15 +37,21 @@ function recognitionCtor(): RecognitionCtor | null {
  * be able to block the lesson.
  */
 export function useDictation() {
-  const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState("");
   const ref = useRef<RecognitionLike | null>(null);
   const finalRef = useRef("");
 
+  // Derived once on the client rather than held as state, so no effect writes
+  // state on mount just to record a static capability.
+  const supported = useSyncExternalStore(
+    () => () => {},
+    () => recognitionCtor() !== null,
+    () => false,
+  );
+
   useEffect(() => {
-    setSupported(recognitionCtor() !== null);
     return () => {
       try {
         ref.current?.stop();

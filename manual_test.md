@@ -11,6 +11,27 @@
 > fastest way to prove that is to run the same step twice with different
 > inputs.
 
+## The topic to demo with: **`how bread rises`**
+
+It is the one topic that exercises all five levels honestly:
+
+- **Classified HYBRID**, so both the theory and practical paths are in play.
+- **Six concepts with real prerequisite structure** — yeast fermentation →
+  gluten matrix → gas trapping → oven spring → crumb setting — so the roadmap
+  has genuine depth rather than a flat list.
+- **Level 4 becomes "Diagnosing Density, Overproofing and Volume Defects"**,
+  which is genuinely photographable: show it a dense loaf and it grades what
+  it can actually see.
+- **Almost everyone confidently half-knows it.** Most people think yeast
+  "makes air". That is exactly the kind of gap the classroom exists to catch,
+  and it makes Kiki's planted-error trap land hard.
+- It **pictures well** for Level 3 — gas bubbles caught in a stretching net.
+
+Use interest `cricket` or `cooking` so Level 2's analogy has something to work
+with. If your evaluators are engineers, `how recursion works` is the better
+second topic — it also returns HYBRID, and its call-stack diagram is the
+clearest demonstration that the board picks a diagram *kind* to fit the idea.
+
 ---
 
 ## 0 · Deployment sanity — 30 seconds

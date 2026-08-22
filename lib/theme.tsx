@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
+import { usePersisted } from "./persisted";
 
 export type ThemeId = "daylight" | "meadow" | "ember" | "indigo";
 
@@ -58,34 +52,21 @@ const Ctx = createContext<{
 } | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeId>(DEFAULT);
+  const { value: theme, set } = usePersisted<ThemeId>(KEY, DEFAULT);
+  const valid = THEMES.some((t) => t.id === theme) ? theme : DEFAULT;
 
+  // The inline script in the layout sets this before first paint; this keeps
+  // the attribute in step when the choice changes or another tab changes it.
   useEffect(() => {
-    let saved: ThemeId | null = null;
-    try {
-      saved = window.localStorage.getItem(KEY) as ThemeId | null;
-    } catch {
-      /* storage unavailable — the default stands */
-    }
-    if (saved && THEMES.some((t) => t.id === saved)) {
-      setThemeState(saved);
-      document.documentElement.dataset.theme = saved;
-    } else {
-      document.documentElement.dataset.theme = DEFAULT;
-    }
-  }, []);
+    document.documentElement.dataset.theme = valid;
+  }, [valid]);
 
-  const setTheme = useCallback((t: ThemeId) => {
-    setThemeState(t);
-    document.documentElement.dataset.theme = t;
-    try {
-      window.localStorage.setItem(KEY, t);
-    } catch {
-      /* storage unavailable — the choice lasts for this tab */
-    }
-  }, []);
+  const setTheme = useCallback((t: ThemeId) => set(t), [set]);
 
-  const value = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+  const value = useMemo(
+    () => ({ theme: valid, setTheme }),
+    [valid, setTheme],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

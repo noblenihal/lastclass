@@ -1,16 +1,14 @@
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Camera, Eye, Play, Volume2 } from "lucide-react";
-import { useAuth, useRequireProfile } from "@/lib/auth";
+import { ArrowLeft } from "lucide-react";
+import { useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
-import { useDictation, useSpeaker } from "@/lib/speech";
 import { RUNGS, RUNG_LABEL } from "@/lib/types";
 import { ThemePicker } from "@/components/ThemePicker";
 import { LevelRail } from "@/components/LevelRail";
-import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
+import { Button, ErrorNote, Reveal } from "@/components/ui";
 import { Check } from "@/components/lesson/Check";
 import { InterestCapture } from "@/components/lesson/InterestCapture";
 import { Loading } from "@/components/lesson/Loading";
@@ -19,7 +17,6 @@ import { Visualise } from "@/components/lesson/Visualise";
 import { ApplyTask } from "@/components/lesson/ApplyTask";
 import type { Lesson } from "@/components/lesson/types";
 import { Whiteboard, type Beat } from "@/components/lesson/Whiteboard";
-import { politeProps, useMotionSafe } from "@/lib/a11y";
 
 
 export default function LevelPage({
@@ -40,11 +37,29 @@ export default function LevelPage({
   const [loading, setLoading] = useState(true);
   /** Rung 1 holds its question back until the board has been watched. */
   const [watched, setWatched] = useState(false);
+  /** Which lesson has already been asked for, so it is fetched once. */
+  const requested = useRef("");
 
   const load = useCallback(async () => {
     if (!session) return;
-    setLoading(true);
     setError("");
+
+    // A lesson for the same topic, rung and depth is identical, so a revisit
+    // costs nothing rather than regenerating the whole thing.
+    const cacheKey = `lastclass:lesson:${session.id}:${rung}:${
+      session.detectedLevel ?? session.statedLevel
+    }`;
+    try {
+      const cached = window.sessionStorage.getItem(cacheKey);
+      if (cached) {
+        setLesson(JSON.parse(cached) as Lesson);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      /* no cache available — generate it */
+    }
+
     try {
       const res = await fetch("/api/lesson", {
         method: "POST",
@@ -67,6 +82,11 @@ export default function LevelPage({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not build this level.");
       setLesson(data as Lesson);
+      try {
+        window.sessionStorage.setItem(cacheKey, JSON.stringify(data));
+      } catch {
+        /* over quota — the lesson still works, it just regenerates next time */
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -74,9 +94,15 @@ export default function LevelPage({
     }
   }, [session, rung]);
 
+  // Fires once per lesson. `loading` starts true and is only ever cleared by
+  // load(), so the effect never sets state synchronously.
   useEffect(() => {
-    if (session && !lesson && loading) void load();
-  }, [session, lesson, loading, load]);
+    if (!session) return;
+    const key = `${session.id}:${rung}`;
+    if (requested.current === key) return;
+    requested.current = key;
+    void load();
+  }, [session, rung, load]);
 
   if (!profile) return null;
   if (!session) {
@@ -139,7 +165,14 @@ export default function LevelPage({
         {error && !loading && (
           <div className="space-y-4">
             <ErrorNote>{error}</ErrorNote>
-            <Button onClick={load}>Try again</Button>
+            <Button
+              onClick={() => {
+                setLoading(true);
+                void load();
+              }}
+            >
+              Try again
+            </Button>
           </div>
         )}
 

@@ -50,6 +50,9 @@ export function Whiteboard({
   const motion$ = useMotionSafe();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playToken = useRef(0);
+  /** `run` advances to the next beat by calling itself; a ref keeps that
+   *  recursion from referencing the callback before it is declared. */
+  const runRef = useRef<(idx: number) => void>(() => {});
 
   const beat = beats[i];
 
@@ -141,14 +144,18 @@ export function Whiteboard({
       if (token !== playToken.current) return;
 
       if (idx + 1 < beats.length) {
-        void run(idx + 1);
+        runRef.current(idx + 1);
       } else {
         setPlaying(false);
         onFinished?.();
       }
     },
-    [beats.length, fetchAudio, onFinished],
+    [beats, fetchAudio, onFinished],
   );
+
+  useEffect(() => {
+    runRef.current = (idx: number) => void run(idx);
+  }, [run]);
 
   /**
    * Warms every beat's narration the moment the script arrives, three at a

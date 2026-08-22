@@ -17,17 +17,17 @@ https://promptwar-private-cih8bkswn-nihal-guptas-projects.vercel.app
 
 ================================================================
 3. DESCRIBE THE CHANGES/UPDATES MADE IN THE DEPLOYED VERSION
-   [paste-ready · 968/1024 chars]
+   [paste-ready · 1005/1024 chars]
 ================================================================
-LastClass teaches you any topic in five levels, then makes you teach it back to a class that asks you questions.
+Since the last submission:
 
-Tell it what you want to learn and how deep to go — the same topic taught to a ten-year-old and to a university student becomes a genuinely different course, not the same one reworded. You can also paste something you've written about it, and it works out what you already understand.
+TESTS — there were none. Added vitest with 95 tests and enforced coverage thresholds, covering the logic where a bug fails silently rather than throwing: the concept graph's cycle guard, the WAV audio header, model-output sanitisation, the error taxonomy, and the learner model. 100% statements and functions on that core.
 
-Level 1, you watch it explained on a whiteboard, with drawings appearing as they're mentioned. Level 2, it's compared to a hobby you already know well. Level 3, you close your eyes and build a picture of it in your head. Level 4, you actually do it — photograph your attempt, or find the mistake in a broken example.
+CODE STRUCTURE — split the two oversized pages: the level page went 782 to 212 lines, the classroom 828 to 581, with nine components extracted. Pulled out three modules so the important logic has one home: the learner model, the trust boundary sanitising Gemini output, and the failure taxonomy. Fixed all 6 lint errors, including a real recursion bug in the whiteboard player and five effects setting state synchronously.
 
-Level 5 is the real test. You explain the topic to five students, and they ask about exactly the parts you glossed over. Answer vaguely and they press harder. Skip a question and that hand stays up.
+NEW — all four remaining levels built (Watch, Compare, Picture, Do), a concept map you can drill into, four themes, illustrated characters.
 
-There's no quiz anywhere. Teaching it is the test.
+FIXES — depth no longer escalates the subject; lessons are cached, so a revisit is free.
 
 ================================================================
 4. GEN AI SERVICES UTILISED, AND WHERE

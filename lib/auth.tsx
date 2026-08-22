@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
+import { usePersisted } from "./persisted";
 import { useRouter } from "next/navigation";
 import type { Profile } from "./types";
 
@@ -23,61 +17,26 @@ interface AuthValue {
 
 const Ctx = createContext<AuthValue | null>(null);
 
-function read(): Profile | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return null;
-    const p = JSON.parse(raw) as Profile;
-    return p && typeof p.email === "string" ? p : null;
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [ready, setReady] = useState(false);
+  const { value: profile, set, hydrated } = usePersisted<Profile | null>(
+    KEY,
+    null,
+  );
 
-  useEffect(() => {
-    setProfile(read());
-    setReady(true);
-  }, []);
+  const signIn = useCallback((p: Profile) => set(p), [set]);
+  const signOut = useCallback(() => set(null), [set]);
 
-  const signIn = useCallback((p: Profile) => {
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(p));
-    } catch {
-      /* storage unavailable — session stays in memory for this tab */
-    }
-    setProfile(p);
-  }, []);
-
-  const signOut = useCallback(() => {
-    try {
-      window.localStorage.removeItem(KEY);
-    } catch {
-      /* nothing to clear */
-    }
-    setProfile(null);
-  }, []);
-
-  const update = useCallback((patch: Partial<Profile>) => {
-    setProfile((prev) => {
-      if (!prev) return prev;
-      const next = { ...prev, ...patch };
-      try {
-        window.localStorage.setItem(KEY, JSON.stringify(next));
-      } catch {
-        /* storage unavailable */
-      }
-      return next;
-    });
-  }, []);
+  const update = useCallback(
+    (patch: Partial<Profile>) => {
+      if (!profile) return;
+      set({ ...profile, ...patch });
+    },
+    [profile, set],
+  );
 
   const value = useMemo(
-    () => ({ profile, ready, signIn, signOut, update }),
-    [profile, ready, signIn, signOut, update],
+    () => ({ profile, ready: hydrated, signIn, signOut, update }),
+    [profile, hydrated, signIn, signOut, update],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

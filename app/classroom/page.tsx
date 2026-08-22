@@ -7,30 +7,23 @@ import {
   ArrowLeft,
   Hand,
   Plus,
-  Keyboard,
-  Mic,
-  MicOff,
-  Sparkles,
-  Volume2,
 } from "lucide-react";
 import { useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
 import { useDictation, useSpeaker } from "@/lib/speech";
 import {
-  CHARACTERS,
-  MENTOR,
   byId,
   type Doubt,
   type MentorNote,
 } from "@/lib/characters";
-import { Seat, type SeatState } from "@/components/Seat";
+import { type SeatState } from "@/components/Seat";
 import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
 import { ReportCard } from "@/components/ReportCard";
 import { VoicePad } from "@/components/classroom/VoicePad";
 import { ClassroomStage } from "@/components/classroom/ClassroomStage";
 import { DoubtCard } from "@/components/classroom/DoubtCard";
-import { politeProps, useMotionSafe } from "@/lib/a11y";
+import { useMotionSafe } from "@/lib/a11y";
 
 type Phase = "explaining" | "taking" | "answering" | "ended";
 
