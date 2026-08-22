@@ -13,7 +13,7 @@ https://github.com/noblenihal/lastclass
 ================================================================
 2. DEPLOYED LINK
 ================================================================
-https://promptwar-private-j7tfcpvkd-nihal-guptas-projects.vercel.app
+https://promptwar-private-nwx6w2yfa-nihal-guptas-projects.vercel.app
 
   Vercel deployment protection is disabled — the URL is publicly reachable.
   Sign-in screen offers "Continue as evaluator" so every feature is reachable
