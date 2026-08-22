@@ -13,7 +13,7 @@ https://github.com/noblenihal/lastclass
 ================================================================
 2. DEPLOYED LINK
 ================================================================
-https://promptwar-private-11kn7rr42-nihal-guptas-projects.vercel.app
+https://promptwar-private-aenwe9sug-nihal-guptas-projects.vercel.app
 
   Vercel deployment protection is disabled — the URL is publicly reachable.
   Sign-in screen offers "Continue as evaluator" so every feature is reachable
@@ -115,8 +115,13 @@ so responses are guaranteed-parseable rather than prompt-and-hope)
                        Text only, and it never answers the student for them.
 
   /api/classroom/judge  Judges the learner's answer in the character's own
-                       voice, returns resolved/quality/reply/gap, and that
-                       verdict is what moves the concept map.
+                       voice and, when the answer misses, returns the follow-up
+                       that same character presses with — narrowed onto the
+                       exact gap. The verdict is what moves the concept map.
+                       Follow-ups ride back in the same response, so the
+                       back-and-forth needs no sockets and no extra latency;
+                       session state lives client-side and the server stays
+                       stateless.
 
 MODEL: gemini-3.1-flash-tts-preview — text to speech
 

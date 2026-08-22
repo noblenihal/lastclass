@@ -1,6 +1,6 @@
 # LastClass — manual test guide
 
-Live: https://promptwar-private-11kn7rr42-nihal-guptas-projects.vercel.app
+Live: https://promptwar-private-aenwe9sug-nihal-guptas-projects.vercel.app
 
 > Use **Chrome**. Speech recognition is Chrome-only — every screen has a
 > "Type instead" toggle, so nothing is blocked without a mic, but the voice
@@ -94,7 +94,10 @@ Run the **same topic at two different depths** and compare.
 1. Click through levels 1–5 in the left rail.
 2. **Expect:** the panel below the map swaps to that level, showing its title,
    what happens there, and the concept chips it touches. Locked levels say so.
-3. Levels 1–4 currently say "being built" — **level 5 is the playable one.**
+3. Levels 2–4 are roadmap and say so. **Level 5 (Teach) is playable and
+   always reachable** — it is deliberately not gated behind the unbuilt rungs.
+4. Level 2 (Compare) asks what you already know well, at the moment it is
+   actually used, and remembers it on your profile.
 
 ---
 
@@ -179,6 +182,23 @@ When a student asks something you can't answer, you have a fourth option.
 4. Answer the student now. **Expect:** it resolves, but that concept gains
    **half** the mastery it would have if you'd got there alone.
 5. The button disables to "Asked" — you can't farm it twice on one question.
+
+### 2.4c They press harder — the room won't let it slide
+1. Answer a question **badly on purpose** — vague and confident. Try:
+   *"Yeah basically they fall the same because of physics, gravity works out
+   equal for everything."*
+2. **Expect:** the character rejects it out loud and **immediately re-asks**,
+   narrower and easier, aimed at the exact thing you missed. Ours gave:
+   > 🦉 *"Saying 'because of physics' doesn't explain it! If gravity pulls
+   > harder on the heavier ball, why isn't it speeding up faster?"*
+   > then pressed: *"Doesn't a heavier object require more force to
+   > accelerate? How does that balance out the stronger gravitational pull?"*
+3. The card shows **"Pressing again · attempt 2"**, and the continue button
+   reads *"Prof. Hoot isn't satisfied — hear them out"*.
+4. Answer badly again → they press once more, then let it go. Two presses is
+   the cap: pressing, not badgering.
+5. **Note:** a follow-up jumps the queue ahead of other raised hands, so that
+   student finishes their line of questioning first — like a real classroom.
 
 ### 2.5 Skipping — the debt mechanic
 1. On any question, press **Skip for now**.
