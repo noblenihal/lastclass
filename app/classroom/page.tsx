@@ -3,11 +3,25 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Hand, Keyboard, Mic, MicOff, Volume2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Hand,
+  Keyboard,
+  Mic,
+  MicOff,
+  Sparkles,
+  Volume2,
+} from "lucide-react";
 import { useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
 import { useDictation, useSpeaker } from "@/lib/speech";
-import { CHARACTERS, byId, type Doubt } from "@/lib/characters";
+import {
+  CHARACTERS,
+  MENTOR,
+  byId,
+  type Doubt,
+  type MentorNote,
+} from "@/lib/characters";
 import { Seat, type SeatState } from "@/components/Seat";
 import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
 import { ReportCard } from "@/components/ReportCard";
@@ -27,6 +41,10 @@ export default function ClassroomPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [typed, setTyped] = useState(false);
+  const [note, setNote] = useState<{ id: string; note: MentorNote } | null>(
+    null,
+  );
+  const [asking, setAsking] = useState(false);
 
   const dictation = useDictation();
   const answer = useDictation();
@@ -119,6 +137,7 @@ export default function ClassroomPage() {
   function openDoubt(d: Doubt) {
     setActiveId(d.id);
     setReply(null);
+    setNote(null);
     answer.reset();
     setPhase("answering");
     void speakDoubt(d);
@@ -179,8 +198,10 @@ export default function ClassroomPage() {
         ),
       );
 
-      // The learner model moves only here — on real evidence.
-      nudgeMastery(active.conceptId, resolved ? 0.22 + quality * 0.18 : -0.14);
+      // The learner model moves only here — on real evidence. An answer the
+      // learner needed the Master for is worth half of one they found alone.
+      const gain = (0.22 + quality * 0.18) * (active.assisted ? 0.5 : 1);
+      nudgeMastery(active.conceptId, resolved ? gain : -0.14);
 
       setReply({ id: active.id, text: data.reply });
 
@@ -195,9 +216,43 @@ export default function ClassroomPage() {
     }
   }
 
+  /* ---- stuck? the Master teaches YOU, then you still have to say it ---- */
+  async function askMaster() {
+    if (!active || !session) return;
+    setError("");
+    setAsking(true);
+    try {
+      const res = await fetch("/api/classroom/mentor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: session.topic,
+          question: active.question,
+          lookingFor: active.lookingFor,
+          level: session.detectedLevel ?? session.statedLevel,
+          interest: session.interest,
+          transcript: dictation.transcript.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "The Master is unavailable.");
+
+      // Taking the hint is recorded — it halves what this answer can earn.
+      setDoubts((prev) =>
+        prev.map((d) => (d.id === active.id ? { ...d, assisted: true } : d)),
+      );
+      setNote({ id: active.id, note: data as MentorNote });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something broke.");
+    } finally {
+      setAsking(false);
+    }
+  }
+
   function nextDoubt() {
     const next = doubts.find((d) => d.status === "raised");
     setReply(null);
+    setNote(null);
     answer.reset();
     if (next) openDoubt(next);
     else {
@@ -434,6 +489,63 @@ export default function ClassroomPage() {
                   </div>
                 ) : (
                   <>
+                    {/* the Master's note — read it, then say it yourself */}
+                    {note?.id === active.id && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.32 }}
+                        className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-3)]/50 p-5"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-[1.25rem] leading-none">
+                            {MENTOR.emoji}
+                          </span>
+                          <span className="text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
+                            {MENTOR.name} — for your eyes only
+                          </span>
+                        </div>
+
+                        <p className="mt-3 text-[var(--text-base)] leading-relaxed text-[var(--color-ink)]">
+                          {note.note.answer}
+                        </p>
+
+                        {note.note.keyPoints.length > 0 && (
+                          <div className="mt-4">
+                            <span className="block text-[var(--text-xs)] text-[var(--color-ink-3)] mb-1.5">
+                              Your answer needs to hit
+                            </span>
+                            <ul className="space-y-1">
+                              {note.note.keyPoints.map((k, i) => (
+                                <li
+                                  key={i}
+                                  className="flex gap-2 text-[var(--text-sm)] text-[var(--color-ink-2)]"
+                                >
+                                  <span className="text-[var(--color-accent)]">
+                                    ·
+                                  </span>
+                                  {k}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <p className="mt-4 text-[var(--text-sm)] text-[var(--color-ink-2)]">
+                          <span className="text-[var(--color-urgent)]">
+                            Watch out:
+                          </span>{" "}
+                          {note.note.watchOut}
+                        </p>
+
+                        <p className="mt-4 pt-4 border-t border-[var(--color-paper-4)] text-[var(--text-sm)] text-[var(--color-ink-3)]">
+                          Now tell {byId(active.characterId).name} yourself — in
+                          your own words, not the Master&apos;s. This one counts
+                          for half.
+                        </p>
+                      </motion.div>
+                    )}
+
                     <VoicePad
                       dictation={answer}
                       typed={typed}
@@ -441,9 +553,18 @@ export default function ClassroomPage() {
                       placeholder="Type or speak your answer…"
                     />
                     <ErrorNote>{error}</ErrorNote>
-                    <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                    <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                       <Button onClick={submitAnswer} loading={busy}>
                         Explain
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={askMaster}
+                        loading={asking}
+                        disabled={busy || Boolean(note?.id === active.id)}
+                      >
+                        <Sparkles size={14} />
+                        {note?.id === active.id ? "Asked" : "Ask the Master"}
                       </Button>
                       <Button variant="ghost" onClick={defer} disabled={busy}>
                         Skip for now

@@ -60,8 +60,15 @@ Each character probes a different way an explanation fails:
                       planted in it; the learner passes only by catching it
 
 Each question is spoken aloud in that character's own voice. The learner can
-Explain (answer it), Skip for now (the hand stays up as visible debt), or End
-class. Answers are judged in character, and the verdict moves that concept's
+Explain (answer it), Ask the Master, Skip for now (the hand stays up as
+visible debt), or End class.
+
+Ask the Master is the stuck button, and it is deliberately not a cheat. The
+Master teaches the LEARNER in text — an explanation at their depth using their
+interest domain, the points their answer must hit, and the common trap — but
+never answers the student. The learner still has to turn round and explain it
+themselves, and an assisted answer earns half the mastery of one they reached
+alone. The report card names which answers needed help. Answers are judged in character, and the verdict moves that concept's
 mastery on the map. Hands still up at the end become the report card and pull
 mastery down. There is no separate quiz anywhere in the product — teaching is
 the assessment.
@@ -101,6 +108,11 @@ so responses are guaranteed-parseable rather than prompt-and-hope)
                        the class raises — each assigned to the character whose
                        probe style fits, tagged with a severity and the concept
                        it targets.
+
+  /api/classroom/mentor Teaches the learner when they are stuck on a student's
+                       question: a depth-matched explanation, the key points
+                       their answer must contain, and the usual misconception.
+                       Text only, and it never answers the student for them.
 
   /api/classroom/judge  Judges the learner's answer in the character's own
                        voice, returns resolved/quality/reply/gap, and that

@@ -162,6 +162,24 @@ goalposts, crossbars and medicine balls unprompted).
 4. Now do it again and *catch the error* — say what she got wrong and correct
    it. **Expect:** resolved, hand down, mastery up.
 
+### 2.4b Ask the Master — stuck, but not a free pass
+When a student asks something you can't answer, you have a fourth option.
+
+1. On any open question press **Ask the Master** (🧙).
+2. **Expect (text, not voice — deliberately, so you can read it):**
+   - A short explanation pitched at *your* chosen depth, using *your* interest
+     domain. At Basic with `football` ours read: *"it is harder to budge…
+     the heavy one is stubborn and resists moving… the stronger pull and the
+     extra stubbornness perfectly balance out."*
+   - **Your answer needs to hit** — 2–4 bullets
+   - **Watch out** — the thing people most often get wrong
+   - A line reminding you this one counts for half
+3. **The Master never answers the student.** You still have to turn round and
+   explain it to them yourself, in your own words.
+4. Answer the student now. **Expect:** it resolves, but that concept gains
+   **half** the mastery it would have if you'd got there alone.
+5. The button disables to "Asked" — you can't farm it twice on one question.
+
 ### 2.5 Skipping — the debt mechanic
 1. On any question, press **Skip for now**.
 2. **Expect:** her hand **stays up**, the desk bar under her turns rose, and the
@@ -175,7 +193,9 @@ goalposts, crossbars and medicine balls unprompted).
    - A verdict headline that reflects what actually happened
      (*"You left 2 hands in the air."* vs *"Every hand went down."*)
    - The concept map again — now visibly changed by the class
-   - Every question listed as Cleared / Skipped / Didn't land
+   - Every question listed as **Cleared on your own** / **Cleared — with the
+     Master's help, counts for half** / Skipped / Didn't land
+   - The subtitle counts how many needed the Master
    - Skipped questions have pulled their concepts' mastery **down**
 3. Click **Teach it again** and give a *better* explanation. **Expect:** fewer
    hands, and the map gets brighter. This is the adaptive loop closing.

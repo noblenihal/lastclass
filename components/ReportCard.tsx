@@ -25,6 +25,7 @@ export function ReportCard({
   const router = useRouter();
 
   const resolved = doubts.filter((d) => d.status === "resolved");
+  const assisted = resolved.filter((d) => d.assisted);
   const dodged = doubts.filter((d) => d.status === "deferred");
   const fumbled = doubts.filter((d) => d.status === "fumbled");
   const clean = doubts.length > 0 && dodged.length === 0 && fumbled.length === 0;
@@ -52,7 +53,13 @@ export function ReportCard({
             {verdict}
           </h1>
           <p className="mt-3 text-[var(--text-lg)] text-[var(--color-ink-2)]">
-            {topic} · {resolved.length} of {doubts.length} doubts cleared
+            {topic} · {resolved.length} of {doubts.length} questions cleared
+            {assisted.length > 0 && (
+              <span className="text-[var(--color-ink-3)]">
+                {" "}
+                ({assisted.length} with the Master&apos;s help)
+              </span>
+            )}
           </p>
         </Reveal>
 
@@ -97,7 +104,9 @@ export function ReportCard({
                       </p>
                       <p className="mt-1 text-[var(--text-sm)] text-[var(--color-ink-3)]">
                         {d.status === "resolved"
-                          ? "Cleared"
+                          ? d.assisted
+                            ? "Cleared — with the Master's help, counts for half"
+                            : "Cleared on your own"
                           : d.status === "deferred"
                             ? "You said you'd come back to it"
                             : "Answer didn't land"}

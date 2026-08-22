@@ -95,6 +95,30 @@ export const CHARACTERS: Character[] = [
 export const byId = (id: string): Character =>
   CHARACTERS.find((c) => c.id === id) ?? CHARACTERS[0];
 
+/**
+ * The mentor at the back of the room.
+ *
+ * When the learner is stuck on a student's question they can ask the Master.
+ * He does not answer the student — he teaches the learner, who then still has
+ * to turn round and say it themselves. Taking the hint is recorded, and an
+ * assisted answer earns less mastery than one the learner found alone.
+ */
+export const MENTOR = {
+  id: "master",
+  name: "The Master",
+  emoji: "🧙",
+} as const;
+
+/** What the Master hands back — read, not spoken. */
+export interface MentorNote {
+  /** The explanation itself, pitched at the learner's depth. */
+  answer: string;
+  /** 2-4 bullets the learner should hit when they say it back. */
+  keyPoints: string[];
+  /** The one thing people get wrong here. */
+  watchOut: string;
+}
+
 /** A doubt raised from a seat, aimed at one concept in the graph. */
 export interface Doubt {
   id: string;
@@ -106,4 +130,6 @@ export interface Doubt {
   /** What a satisfying answer has to contain — used to judge the reply. */
   lookingFor: string;
   status: "raised" | "deferred" | "resolved" | "fumbled";
+  /** True once the learner consulted the Master on this one. */
+  assisted?: boolean;
 }
