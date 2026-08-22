@@ -8,6 +8,7 @@ import { useAuth, useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
 import { RUNG_BLURB, RUNG_LABEL, type Level } from "@/lib/types";
 import { MasteryGraph } from "@/components/MasteryGraph";
+import { ThemePicker } from "@/components/ThemePicker";
 import { Button, Reveal } from "@/components/ui";
 
 const TYPE_COPY: Record<string, string> = {
@@ -79,6 +80,7 @@ export default function LearnPage() {
 
         {/* overall mastery — the one number that summarises the learner model */}
         <div className="flex items-center gap-3 shrink-0">
+          <ThemePicker />
           <div className="hidden sm:block text-right">
             <span className="block text-[var(--text-xs)] text-[var(--color-ink-3)] leading-tight">
               Mastery
@@ -308,7 +310,7 @@ function RailItem({
           className={
             "grid place-items-center size-6 shrink-0 rounded-full font-[family-name:var(--font-mono)] text-[0.6875rem] " +
             (level.passed
-              ? "bg-[var(--color-accent)] text-[oklch(18%_0.02_55)]"
+              ? "bg-[var(--color-accent)] text-[var(--on-accent)]"
               : active
                 ? "bg-[var(--color-paper-4)] text-[var(--color-accent)]"
                 : "bg-[var(--color-paper-3)] text-[var(--color-ink-3)]")

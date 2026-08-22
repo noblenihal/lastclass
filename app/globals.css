@@ -6,36 +6,163 @@
 
 @import "tailwindcss";
 
-:root {
-  /* ---- paper (dark canvas, warm-biased) ---- */
+/* ============================================================
+   THEMES — the learner picks one; every component reads tokens,
+   so a theme is a token swap rather than a re-style.
+   Each pair differs on paper band AND accent hue.
+   ============================================================ */
+
+/* ---- Daylight · light cream paper · warm amber (default) ---- */
+:root,
+[data-theme="daylight"] {
+  --color-paper: oklch(97% 0.018 85);
+  --color-paper-2: oklch(94% 0.024 82);
+  --color-paper-3: oklch(90% 0.03 80);
+  --color-paper-4: oklch(84% 0.038 78);
+
+  --color-ink: oklch(26% 0.035 60);
+  --color-ink-2: oklch(42% 0.03 60);
+  --color-ink-3: oklch(56% 0.026 62);
+  --color-ink-4: oklch(70% 0.024 65);
+
+  --color-accent: oklch(62% 0.16 52);
+  --color-accent-hot: oklch(56% 0.18 48);
+  --color-accent-dim: oklch(80% 0.08 60);
+  --color-accent-ghost: oklch(62% 0.16 52 / 0.14);
+
+  --color-urgent: oklch(56% 0.19 22);
+  --color-urgent-ghost: oklch(56% 0.19 22 / 0.13);
+
+  --mastery-0: oklch(86% 0.014 70);
+  --mastery-1: oklch(80% 0.07 62);
+  --mastery-2: oklch(72% 0.11 58);
+  --mastery-3: oklch(66% 0.14 54);
+  --mastery-4: oklch(58% 0.17 50);
+
+  --bloom-a: oklch(80% 0.13 70 / 0.3);
+  --bloom-b: oklch(72% 0.11 22 / 0.16);
+  --grain: 0.03;
+  --scrim-top: oklch(97% 0.018 85 / 0.18);
+  --scrim-bottom: oklch(97% 0.018 85 / 0.6);
+  --on-accent: oklch(99% 0.01 85);
+
+  --glow: 0 0 0 1px oklch(62% 0.16 52 / 0.3), 0 6px 26px -8px oklch(62% 0.16 52 / 0.4);
+  --glow-urgent: 0 0 0 1px oklch(56% 0.19 22 / 0.34), 0 6px 26px -8px oklch(56% 0.19 22 / 0.4);
+}
+
+/* ---- Meadow · light mint paper · leaf green ---- */
+[data-theme="meadow"] {
+  --color-paper: oklch(97% 0.02 150);
+  --color-paper-2: oklch(94% 0.028 152);
+  --color-paper-3: oklch(90% 0.034 154);
+  --color-paper-4: oklch(84% 0.04 156);
+
+  --color-ink: oklch(25% 0.04 165);
+  --color-ink-2: oklch(41% 0.035 165);
+  --color-ink-3: oklch(55% 0.03 165);
+  --color-ink-4: oklch(70% 0.026 165);
+
+  --color-accent: oklch(55% 0.14 152);
+  --color-accent-hot: oklch(48% 0.16 150);
+  --color-accent-dim: oklch(78% 0.07 152);
+  --color-accent-ghost: oklch(55% 0.14 152 / 0.14);
+
+  --color-urgent: oklch(58% 0.17 32);
+  --color-urgent-ghost: oklch(58% 0.17 32 / 0.13);
+
+  --mastery-0: oklch(87% 0.016 155);
+  --mastery-1: oklch(80% 0.06 153);
+  --mastery-2: oklch(71% 0.1 152);
+  --mastery-3: oklch(63% 0.13 152);
+  --mastery-4: oklch(54% 0.15 150);
+
+  --bloom-a: oklch(84% 0.11 155 / 0.32);
+  --bloom-b: oklch(80% 0.09 95 / 0.2);
+  --grain: 0.028;
+  --scrim-top: oklch(97% 0.02 150 / 0.18);
+  --scrim-bottom: oklch(97% 0.02 150 / 0.6);
+  --on-accent: oklch(99% 0.01 150);
+
+  --glow: 0 0 0 1px oklch(55% 0.14 152 / 0.3), 0 6px 26px -8px oklch(55% 0.14 152 / 0.4);
+  --glow-urgent: 0 0 0 1px oklch(58% 0.17 32 / 0.34), 0 6px 26px -8px oklch(58% 0.17 32 / 0.4);
+}
+
+/* ---- Chalk & Ember · dark slate paper · warm ember ---- */
+[data-theme="ember"] {
   --color-paper: oklch(15% 0.012 55);
   --color-paper-2: oklch(19.5% 0.015 55);
   --color-paper-3: oklch(25% 0.018 55);
   --color-paper-4: oklch(31% 0.02 55);
 
-  /* ---- ink (chalk on slate) ---- */
   --color-ink: oklch(95% 0.006 65);
   --color-ink-2: oklch(74% 0.011 60);
   --color-ink-3: oklch(56% 0.013 58);
   --color-ink-4: oklch(41% 0.014 58);
 
-  /* ---- accent: single warm ember ---- */
   --color-accent: oklch(74% 0.17 58);
   --color-accent-hot: oklch(80% 0.19 62);
   --color-accent-dim: oklch(52% 0.11 55);
   --color-accent-ghost: oklch(74% 0.17 58 / 0.12);
 
-  /* ---- secondary: rose, urgency only (raised hands, weak nodes) ---- */
   --color-urgent: oklch(66% 0.19 18);
   --color-urgent-ghost: oklch(66% 0.19 18 / 0.14);
 
-  /* ---- mastery ramp: rides the accent, never a second hue ---- */
   --mastery-0: oklch(34% 0.01 58);
   --mastery-1: oklch(46% 0.07 56);
   --mastery-2: oklch(58% 0.12 57);
   --mastery-3: oklch(68% 0.15 58);
   --mastery-4: oklch(80% 0.19 62);
 
+  --bloom-a: oklch(74% 0.17 58 / 0.17);
+  --bloom-b: oklch(66% 0.19 18 / 0.11);
+  --grain: 0.055;
+  --scrim-top: oklch(15% 0.012 55 / 0.5);
+  --scrim-bottom: oklch(15% 0.012 55 / 0.86);
+  --on-accent: oklch(18% 0.02 55);
+
+  --glow: 0 0 0 1px oklch(74% 0.17 58 / 0.22), 0 8px 40px -8px oklch(74% 0.17 58 / 0.28);
+  --glow-urgent: 0 0 0 1px oklch(66% 0.19 18 / 0.3), 0 8px 40px -8px oklch(66% 0.19 18 / 0.34);
+}
+
+/* ---- Indigo · deep indigo paper · cool cyan ---- */
+[data-theme="indigo"] {
+  --color-paper: oklch(17% 0.045 275);
+  --color-paper-2: oklch(22% 0.05 275);
+  --color-paper-3: oklch(27% 0.055 275);
+  --color-paper-4: oklch(34% 0.06 275);
+
+  --color-ink: oklch(95% 0.012 260);
+  --color-ink-2: oklch(76% 0.02 262);
+  --color-ink-3: oklch(60% 0.028 265);
+  --color-ink-4: oklch(45% 0.032 268);
+
+  --color-accent: oklch(78% 0.13 205);
+  --color-accent-hot: oklch(84% 0.15 200);
+  --color-accent-dim: oklch(55% 0.09 210);
+  --color-accent-ghost: oklch(78% 0.13 205 / 0.14);
+
+  --color-urgent: oklch(70% 0.17 5);
+  --color-urgent-ghost: oklch(70% 0.17 5 / 0.15);
+
+  --mastery-0: oklch(36% 0.03 275);
+  --mastery-1: oklch(48% 0.07 240);
+  --mastery-2: oklch(60% 0.1 220);
+  --mastery-3: oklch(70% 0.12 210);
+  --mastery-4: oklch(83% 0.15 200);
+
+  --bloom-a: oklch(70% 0.15 240 / 0.22);
+  --bloom-b: oklch(70% 0.14 320 / 0.13);
+  --grain: 0.05;
+  --scrim-top: oklch(17% 0.045 275 / 0.5);
+  --scrim-bottom: oklch(17% 0.045 275 / 0.86);
+  --on-accent: oklch(18% 0.04 275);
+
+  --glow: 0 0 0 1px oklch(78% 0.13 205 / 0.26), 0 8px 40px -8px oklch(78% 0.13 205 / 0.32);
+  --glow-urgent: 0 0 0 1px oklch(70% 0.17 5 / 0.3), 0 8px 40px -8px oklch(70% 0.17 5 / 0.34);
+}
+
+
+:root {
   /* ---- type ---- */
   --font-display: var(--font-geist-sans);
   --font-body: var(--font-geist-sans);
@@ -74,8 +201,6 @@
   --dur-mid: 260ms;
   --dur-slow: 520ms;
 
-  --glow: 0 0 0 1px oklch(74% 0.17 58 / 0.22), 0 8px 40px -8px oklch(74% 0.17 58 / 0.28);
-  --glow-urgent: 0 0 0 1px oklch(66% 0.19 18 / 0.3), 0 8px 40px -8px oklch(66% 0.19 18 / 0.34);
 }
 
 @theme inline {
@@ -102,6 +227,7 @@ body {
 
 body {
   background: var(--color-paper);
+  transition: background-color 400ms var(--ease-out), color 400ms var(--ease-out);
   color: var(--color-ink);
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: var(--text-base);
@@ -118,16 +244,8 @@ body {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(
-      52% 44% at 18% 8%,
-      oklch(74% 0.17 58 / 0.17) 0%,
-      transparent 68%
-    ),
-    radial-gradient(
-      46% 40% at 88% 92%,
-      oklch(66% 0.19 18 / 0.11) 0%,
-      transparent 70%
-    );
+    radial-gradient(52% 44% at 18% 8%, var(--bloom-a) 0%, transparent 68%),
+    radial-gradient(46% 40% at 88% 92%, var(--bloom-b) 0%, transparent 70%);
   animation: breathe 9s var(--ease-in-out) infinite;
   will-change: transform, opacity;
 }
@@ -149,7 +267,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.055;
+  opacity: var(--grain);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 

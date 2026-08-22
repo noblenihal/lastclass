@@ -23,6 +23,7 @@ import {
   type MentorNote,
 } from "@/lib/characters";
 import { Seat, type SeatState } from "@/components/Seat";
+import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
 import { ReportCard } from "@/components/ReportCard";
 
@@ -375,7 +376,10 @@ export default function ClassroomPage() {
         <Button variant="quiet" onClick={() => router.push("/learn")}>
           <ArrowLeft size={15} /> Ladder
         </Button>
-        <Eyebrow>Rung 5 · Teach</Eyebrow>
+        <div className="flex items-center gap-3">
+          <Eyebrow>Rung 5 · Teach</Eyebrow>
+          <ThemePicker />
+        </div>
       </header>
 
       <div className="mx-auto max-w-[56rem]">
@@ -404,7 +408,7 @@ export default function ClassroomPage() {
               className="absolute inset-0 -z-10"
               style={{
                 background:
-                  "linear-gradient(to bottom, oklch(15% 0.012 55 / 0.55), oklch(15% 0.012 55 / 0.86))",
+                  "linear-gradient(to bottom, var(--scrim-top), var(--scrim-bottom))",
               }}
               aria-hidden="true"
             />

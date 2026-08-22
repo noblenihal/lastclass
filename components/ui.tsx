@@ -49,7 +49,7 @@ export function Button({
 
   const variants = {
     solid:
-      "bg-[var(--color-accent)] text-[oklch(18%_0.02_55)] hover:bg-[var(--color-accent-hot)] " +
+      "bg-[var(--color-accent)] text-[var(--on-accent)] hover:bg-[var(--color-accent-hot)] " +
       "hover:shadow-[var(--glow)] font-semibold",
     ghost:
       "bg-[var(--color-paper-3)] text-[var(--color-ink)] hover:bg-[var(--color-paper-4)]",

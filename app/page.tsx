@@ -13,6 +13,7 @@ import {
   type LearnerLevel,
   type Session,
 } from "@/lib/types";
+import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Field, Reveal } from "@/components/ui";
 
 export default function HomePage() {
@@ -72,6 +73,7 @@ export default function HomePage() {
           <span className="text-[var(--text-sm)] text-[var(--color-ink-3)]">
             {profile.name}
           </span>
+          <ThemePicker />
           <Button variant="quiet" onClick={signOut} aria-label="Sign out">
             <LogOut size={15} />
           </Button>

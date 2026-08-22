@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Field, Reveal } from "@/components/ui";
 
 const DEMO = { name: "Evaluator", email: "demo@lastclass.app", pass: "lastclass" };
@@ -28,7 +29,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex-1 grid place-items-center px-6 py-16">
+    <main className="flex-1 flex flex-col px-6 py-6">
+      <div className="flex justify-end">
+        <ThemePicker />
+      </div>
+      <div className="flex-1 grid place-items-center py-10">
       <Reveal className="w-full max-w-[26rem]">
         <div className="mb-10 text-center">
           <Eyebrow>LastClass</Eyebrow>
@@ -105,6 +110,7 @@ export default function LoginPage() {
           </Button>
         </div>
       </Reveal>
+      </div>
     </main>
   );
 }
