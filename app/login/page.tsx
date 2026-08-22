@@ -36,10 +36,11 @@ export default function LoginPage() {
             className="mt-4 font-semibold tracking-[-0.035em] leading-[1.04]"
             style={{ fontSize: "var(--text-display-s)" }}
           >
-            Take your seat.
+            Sign in
           </h1>
           <p className="mt-3 text-[var(--text-lg)] text-[var(--color-ink-2)] leading-relaxed">
-            Five rungs from never-heard-of-it to teaching it out loud.
+            Learn any topic in 5 levels. The last one: teach it to a class of
+            students who ask you questions.
           </p>
         </div>
 
@@ -53,6 +54,7 @@ export default function LoginPage() {
         >
           <Field
             label="Name"
+            hint="The class will call you by this."
             placeholder="Ankit"
             value={name}
             autoComplete="name"

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, LogOut } from "lucide-react";
 import { useAuth, useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
-import type { Session } from "@/lib/types";
+import { RUNGS, RUNG_BLURB, RUNG_LABEL, type Session } from "@/lib/types";
 import { Button, ErrorNote, Eyebrow, Field, Reveal } from "@/components/ui";
 
 export default function HomePage() {
@@ -24,9 +24,9 @@ export default function HomePage() {
   async function build(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (topic.trim().length < 2) return setError("Give me something to teach.");
+    if (topic.trim().length < 2) return setError("Enter a topic first.");
     if (interest.trim().length < 2)
-      return setError("Name something you're into — every analogy comes from it.");
+      return setError("Enter a hobby or interest so we can build analogies.");
 
     setBusy(true);
     try {
@@ -36,12 +36,12 @@ export default function HomePage() {
         body: JSON.stringify({ topic: topic.trim(), interest: interest.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Something broke.");
+      if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
       update({ interest: interest.trim() });
       setSession(data.session as Session);
       router.push("/learn");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something broke.");
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setBusy(false);
     }
@@ -61,68 +61,96 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="flex-1 grid place-items-center px-6 py-10">
-        <div className="w-full max-w-[38rem]">
-          <Reveal>
-            <h1
-              className="font-semibold tracking-[-0.04em] leading-[1.02] text-balance"
-              style={{ fontSize: "var(--text-display)" }}
-            >
-              What should you
-              <br />
-              be able to teach?
-            </h1>
-            <p className="mt-5 text-[var(--text-xl)] text-[var(--color-ink-2)] leading-relaxed max-w-[34rem]">
-              Name it. We&apos;ll map what it&apos;s made of, then climb you up
-              until you can explain it to a room that asks hard questions.
-            </p>
-          </Reveal>
-
-          <Reveal delay={0.1}>
-            <form onSubmit={build} className="mt-10 space-y-5">
-              <Field
-                label="The topic"
-                placeholder="Recursion · the Krebs cycle · tying a bowline"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-              />
-              <Field
-                label="Something you're already into"
-                hint="Every analogy gets rebuilt out of this. Be specific."
-                placeholder="Cricket · cooking · Formula 1 · rap"
-                value={interest}
-                onChange={(e) => setInterest(e.target.value)}
-              />
-
-              <ErrorNote>{error}</ErrorNote>
-
-              <Button type="submit" loading={busy} className="w-full">
-                {busy ? "Mapping the topic…" : "Build my ladder"}
-                {!busy && <ArrowRight size={16} />}
-              </Button>
-            </form>
-          </Reveal>
-
-          {session && (
-            <Reveal delay={0.2}>
-              <button
-                onClick={() => router.push("/learn")}
-                className="mt-6 w-full text-left rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/60 px-5 py-4 transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-paper-3)]"
+      <div className="flex-1 px-6 py-8 sm:px-10">
+        <div className="mx-auto w-full max-w-[52rem] grid gap-12 lg:grid-cols-[1fr_20rem] lg:gap-16 items-start">
+          {/* ---- the form ---- */}
+          <div>
+            <Reveal>
+              <h1
+                className="font-semibold tracking-[-0.02em] leading-[1.15]"
+                style={{ fontSize: "var(--text-display)" }}
               >
-                <span className="text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
-                  In progress
-                </span>
-                <span className="mt-1 flex items-center justify-between gap-4">
-                  <span className="text-[var(--text-lg)] text-[var(--color-ink)]">
-                    {session.topic}
-                  </span>
-                  <span className="text-[var(--text-sm)] text-[var(--color-accent)] shrink-0">
-                    {session.levels.filter((l) => l.passed).length}/5 rungs
-                  </span>
-                </span>
-              </button>
+                What do you want to learn?
+              </h1>
+              <p className="mt-3 text-[var(--text-lg)] text-[var(--color-ink-2)] leading-relaxed">
+                We&apos;ll break your topic into concepts and build 5 levels —
+                ending with you teaching it to a class that asks questions.
+              </p>
             </Reveal>
-          )}
+
+            <Reveal delay={0.08}>
+              <form onSubmit={build} className="mt-8 space-y-6">
+                <Field
+                  label="Topic you want to learn"
+                  hint="Anything — a concept, a skill, an exam subject."
+                  placeholder="Recursion, photosynthesis, tying a bowline…"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                />
+                <Field
+                  label="A hobby or interest of yours"
+                  hint="We use this to explain hard parts with analogies you'll get."
+                  placeholder="Cricket, cooking, Formula 1…"
+                  value={interest}
+                  onChange={(e) => setInterest(e.target.value)}
+                />
+
+                <ErrorNote>{error}</ErrorNote>
+
+                <Button type="submit" loading={busy} className="w-full">
+                  {busy ? "Building your levels…" : "Build my 5 levels"}
+                  {!busy && <ArrowRight size={16} />}
+                </Button>
+              </form>
+            </Reveal>
+
+            {session && (
+              <Reveal delay={0.16}>
+                <button
+                  onClick={() => router.push("/learn")}
+                  className="mt-6 w-full text-left rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/60 px-5 py-4 transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-paper-3)]"
+                >
+                  <span className="text-[var(--text-sm)] text-[var(--color-ink-3)]">
+                    Continue where you left off
+                  </span>
+                  <span className="mt-1 flex items-center justify-between gap-4">
+                    <span className="text-[var(--text-lg)] text-[var(--color-ink)]">
+                      {session.topic}
+                    </span>
+                    <span className="text-[var(--text-sm)] text-[var(--color-accent)] shrink-0">
+                      {session.levels.filter((l) => l.passed).length}/5 done
+                    </span>
+                  </span>
+                </button>
+              </Reveal>
+            )}
+          </div>
+
+          {/* ---- what the levels actually are ---- */}
+          <Reveal delay={0.2}>
+            <aside className="rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/50 p-5">
+              <h2 className="text-[var(--text-sm)] font-medium text-[var(--color-ink)]">
+                How it works
+              </h2>
+              <ol className="mt-4 space-y-3.5">
+                {RUNGS.map((rung, i) => (
+                  <li key={rung} className="flex gap-3">
+                    <span className="grid place-items-center size-6 shrink-0 rounded-full bg-[var(--color-paper-4)] font-[family-name:var(--font-mono)] text-[0.6875rem] text-[var(--color-accent)]">
+                      {i + 1}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[var(--text-sm)] font-medium text-[var(--color-ink)] leading-tight">
+                        {RUNG_LABEL[rung]}
+                      </span>
+                      <span className="block text-[var(--text-sm)] text-[var(--color-ink-3)] leading-snug">
+                        {RUNG_BLURB[rung]}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </aside>
+          </Reveal>
         </div>
       </div>
     </main>

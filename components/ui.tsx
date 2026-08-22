@@ -77,7 +77,7 @@ export function Field({
 }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
   return (
     <label className="block">
-      <span className="block text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)] mb-2">
+      <span className="block text-[var(--text-base)] font-medium text-[var(--color-ink)] mb-2">
         {label}
       </span>
       <input

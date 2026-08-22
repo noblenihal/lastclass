@@ -41,9 +41,10 @@
   --font-body: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  --text-display: clamp(2.6rem, 5.5vw + 1rem, 5.4rem);
-  --text-display-s: clamp(2rem, 3.6vw + 1rem, 3.4rem);
-  --text-2xl: clamp(1.5rem, 1.4vw + 1rem, 2rem);
+  /* App-scale, not landing-page-scale. These sit above a form, not a hero. */
+  --text-display: clamp(1.75rem, 2.2vw + 1rem, 2.5rem);
+  --text-display-s: clamp(1.5rem, 1.6vw + 0.9rem, 2rem);
+  --text-2xl: clamp(1.25rem, 1vw + 0.9rem, 1.5rem);
   --text-xl: 1.25rem;
   --text-lg: 1.0625rem;
   --text-base: 0.9375rem;

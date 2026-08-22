@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Lock, Check } from "lucide-react";
 import { useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
-import { RUNG_BLURB, type Level } from "@/lib/types";
+import { RUNG_BLURB, RUNG_LABEL, type Level } from "@/lib/types";
 import { MasteryGraph } from "@/components/MasteryGraph";
 import { Button, Eyebrow, Reveal } from "@/components/ui";
 
@@ -73,12 +73,23 @@ export default function LearnPage() {
 
         <Reveal delay={0.2}>
           <section className="mt-10">
-            <h2 className="text-[var(--text-xs)] uppercase tracking-[0.16em] text-[var(--color-ink-3)] mb-5">
-              The climb
+            <h2 className="text-[var(--text-xs)] uppercase tracking-[0.16em] text-[var(--color-ink-3)] mb-2">
+              Your 5 levels
             </h2>
+            <p className="mb-5 text-[var(--text-sm)] text-[var(--color-ink-3)]">
+              Finish a level to unlock the next one.
+            </p>
             <ol className="space-y-3">
               {session.levels.map((l) => (
-                <LevelRow key={l.n} level={l} />
+                <LevelRow
+                  key={l.n}
+                  level={l}
+                  onOpen={
+                    l.rung === "Teach"
+                      ? () => router.push("/classroom")
+                      : undefined
+                  }
+                />
               ))}
             </ol>
           </section>
@@ -88,8 +99,15 @@ export default function LearnPage() {
   );
 }
 
-function LevelRow({ level }: { level: Level }) {
+function LevelRow({
+  level,
+  onOpen,
+}: {
+  level: Level;
+  onOpen?: () => void;
+}) {
   const locked = !level.unlocked;
+  const ready = !locked && Boolean(onOpen);
 
   return (
     <li>
@@ -115,20 +133,25 @@ function LevelRow({ level }: { level: Level }) {
         </span>
 
         <span className="flex-1 min-w-0">
-          <span className="block text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
-            {level.rung}
-          </span>
-          <span className="block text-[var(--text-lg)] text-[var(--color-ink)] leading-snug">
-            {level.title}
+          <span className="block text-[var(--text-lg)] font-medium text-[var(--color-ink)] leading-snug">
+            {RUNG_LABEL[level.rung]}: {level.title}
           </span>
           <span className="block mt-0.5 text-[var(--text-sm)] text-[var(--color-ink-3)]">
             {RUNG_BLURB[level.rung]}
           </span>
         </span>
 
-        {!locked && (
-          <span className="shrink-0 text-[var(--text-sm)] text-[var(--color-accent)] opacity-0 transition-opacity duration-[var(--dur-fast)] group-hover:opacity-100">
-            Coming next
+        {ready ? (
+          <Button onClick={onOpen} className="shrink-0 !px-4 !py-2">
+            Start
+          </Button>
+        ) : locked ? (
+          <span className="shrink-0 text-[var(--text-sm)] text-[var(--color-ink-4)]">
+            Locked
+          </span>
+        ) : (
+          <span className="shrink-0 text-[var(--text-sm)] text-[var(--color-ink-4)]">
+            Coming soon
           </span>
         )}
       </div>

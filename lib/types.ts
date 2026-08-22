@@ -18,13 +18,22 @@ export const RUNGS: Rung[] = [
   "Teach",
 ];
 
-/** What each rung actually does to the learner, in the learner's words. */
+/** Plain-language name for each rung — what the learner actually does. */
+export const RUNG_LABEL: Record<Rung, string> = {
+  Remember: "Watch",
+  Understand: "Compare",
+  Internalize: "Picture",
+  Apply: "Do",
+  Teach: "Teach",
+};
+
+/** One plain sentence explaining what happens at this level. */
 export const RUNG_BLURB: Record<Rung, string> = {
-  Remember: "See it drawn out, piece by piece.",
-  Understand: "Meet it again in a world you already know.",
-  Internalize: "Close your eyes and walk through it.",
-  Apply: "Stop reading. Do it, and show your work.",
-  Teach: "Explain it to a room that will not let it slide.",
+  Remember: "Watch it explained on a whiteboard.",
+  Understand: "See it compared to something you already know.",
+  Internalize: "Close your eyes and picture how it works.",
+  Apply: "Try it yourself and get it checked.",
+  Teach: "Explain it to a class and answer their questions.",
 };
 
 export type ConceptStatus = "locked" | "active" | "weak" | "mastered";
