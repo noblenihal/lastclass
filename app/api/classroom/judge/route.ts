@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateJSON } from "@/lib/gemini";
 import { byId } from "@/lib/characters";
+import { DEPTH_RULE } from "@/lib/context";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -12,6 +13,7 @@ const Body = z.object({
   question: z.string().trim().min(1).max(600),
   lookingFor: z.string().trim().min(1).max(600),
   answer: z.string().trim().min(1).max(4000),
+  level: z.enum(["BASIC", "MEDIUM", "ADVANCED"]).default("MEDIUM"),
 });
 
 const schema = {
@@ -33,7 +35,8 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-  const { topic, characterId, question, lookingFor, answer } = parsed.data;
+  const { topic, characterId, question, lookingFor, answer, level } =
+    parsed.data;
   const character = byId(characterId);
 
   try {
@@ -46,6 +49,10 @@ export async function POST(req: NextRequest) {
       system:
         `You are ${character.name} the ${character.species}, a student in a ` +
         `classroom. ${character.probe}\n\n` +
+        `The learner is working at ${level} depth. ${DEPTH_RULE[level]} ` +
+        "Judge their answer against THAT bar — do not demand university " +
+        "rigour from a beginner, and do not accept a beginner's answer from " +
+        "someone working at an advanced level.\n\n" +
         "You just asked a question and the learner answered. Judge honestly: " +
         "you are a student who genuinely wants to understand, not a marker " +
         "handing out points. If the answer would not actually leave you " +

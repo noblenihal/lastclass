@@ -127,6 +127,23 @@ Then press **Take questions**.
 Explain the same topic *well* and you should get fewer/harder questions;
 explain a different topic and the questions change completely.
 
+### 2.2b The depth context reaches the classroom too
+The depth you picked at intake is threaded into every downstream prompt, so
+the class interrogates you at your level. Give the **same** gravity
+explanation at Basic and at Advanced:
+
+> *"Gravity is a force that pulls things down towards the earth. Heavier
+> things feel it more. That is why a ball comes back down when you kick it up."*
+
+**Expect:**
+- **Basic** — 🐶 Bruno: *"what is a force in plain words? Is someone invisible
+  tugging on the ball?"*
+- **Advanced** — 🐢 Tito: *"what is the rigorous distinction between an
+  object's invariant mass and its gravitational weight?"*
+
+Both should also weave in the interest you gave (with `football`, ours used
+goalposts, crossbars and medicine balls unprompted).
+
 ### 2.3 Answer a question
 1. Click a raised hand (or **Answer next question**).
 2. **Expect:** the card opens, that character's avatar pulses, and the question

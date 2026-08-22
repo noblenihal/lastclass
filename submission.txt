@@ -90,6 +90,12 @@ so responses are guaranteed-parseable rather than prompt-and-hope)
                        pastes a writing sample — judges their real level from
                        it and seeds per-concept starting mastery.
 
+  All content prompts share one learner-context block (lib/context.ts): the
+  depth register, the level detected from their writing, their interest domain
+  and the live mastery map. So the class interrogates a 10-year-old in
+  10-year-old terms and an undergraduate in formal ones, from the same
+  explanation.
+
   /api/classroom/doubts Reads the learner's spoken explanation together with
                        their current mastery values and generates the questions
                        the class raises — each assigned to the character whose

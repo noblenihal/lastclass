@@ -89,6 +89,10 @@ export default function ClassroomPage() {
           topic: session.topic,
           transcript,
           learnerName: profile?.name,
+          level: session.statedLevel,
+          detectedLevel: session.detectedLevel,
+          levelEvidence: session.levelEvidence,
+          interest: session.interest,
           asked: askedRef.current,
           concepts: session.concepts.map((c) => ({
             id: c.id,
@@ -158,6 +162,7 @@ export default function ClassroomPage() {
           question: active.question,
           lookingFor: active.lookingFor,
           answer: text,
+          level: session.detectedLevel ?? session.statedLevel,
         }),
       });
       const data = await res.json();

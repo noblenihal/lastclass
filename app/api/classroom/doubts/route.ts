@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateJSON } from "@/lib/gemini";
 import { CHARACTERS, type Doubt } from "@/lib/characters";
+import { learnerContext } from "@/lib/context";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,6 +11,10 @@ const Body = z.object({
   topic: z.string().trim().min(1).max(160),
   transcript: z.string().trim().min(1).max(6000),
   learnerName: z.string().trim().max(60).optional(),
+  level: z.enum(["BASIC", "MEDIUM", "ADVANCED"]).default("MEDIUM"),
+  detectedLevel: z.enum(["BASIC", "MEDIUM", "ADVANCED"]).optional(),
+  levelEvidence: z.string().trim().max(600).optional(),
+  interest: z.string().trim().max(80).default("everyday life"),
   concepts: z
     .array(
       z.object({
@@ -61,7 +66,17 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-  const { topic, transcript, concepts, asked, learnerName } = parsed.data;
+  const {
+    topic,
+    transcript,
+    concepts,
+    asked,
+    learnerName,
+    level,
+    detectedLevel,
+    levelEvidence,
+    interest,
+  } = parsed.data;
 
   // The two signals that decide what the room asks: where the learner is
   // already weak, and what they just failed to say.
@@ -90,7 +105,19 @@ export async function POST(req: NextRequest) {
         "topic out loud to a room of animal students. Each student probes a " +
         "different failure mode. You generate the doubts they raise. " +
         "You are warm but you do not let weak explanations pass.",
-      prompt: `Topic being taught: "${topic}"
+      prompt: `${learnerContext({
+        topic,
+        level,
+        detectedLevel,
+        levelEvidence,
+        interest,
+        concepts,
+      })}
+
+The students must pitch their questions at that same depth register — a
+class listening to a 10-year-old asks 10-year-old questions.
+
+Topic being taught: "${topic}"
 ${learnerName ? `The learner's name is ${learnerName}. Characters may address them by name.\n` : ""}
 Concepts in the graph:
 ${concepts.map((c) => `- ${c.id}: ${c.name} — ${c.gist}`).join("\n")}
