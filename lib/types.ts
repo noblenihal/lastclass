@@ -19,22 +19,31 @@ export type LearnerLevel = "BASIC" | "MEDIUM" | "ADVANCED";
 export const LEVEL_CHOICES: {
   value: LearnerLevel;
   label: string;
-  hint: string;
+  /** Short anchor shown inside the button — must stay on one line. */
+  anchor: string;
+  /** Full sentence, shown only for the current selection. */
+  detail: string;
 }[] = [
   {
     value: "BASIC",
     label: "Basic",
-    hint: "Curious 10-year-old. Everyday words, no formulas.",
+    anchor: "Age 10",
+    detail:
+      "Everyday words, nothing to memorise and no formulas — the way you'd explain it to a curious ten-year-old.",
   },
   {
     value: "MEDIUM",
     label: "Medium",
-    hint: "High-school. Real terminology, some maths.",
+    anchor: "High school",
+    detail:
+      "Real terminology and simple equations, covering the parts students usually get wrong.",
   },
   {
     value: "ADVANCED",
     label: "Advanced",
-    hint: "University. Full rigour and edge cases.",
+    anchor: "University",
+    detail:
+      "Full rigour — formal definitions, edge cases and the subtleties that separate working knowledge from mastery.",
   },
 ];
 

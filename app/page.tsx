@@ -110,7 +110,7 @@ export default function HomePage() {
                   <legend className="block text-[var(--text-base)] font-medium text-[var(--color-ink)] mb-2">
                     How deep should we go?
                   </legend>
-                  <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="grid grid-cols-3 gap-2">
                     {LEVEL_CHOICES.map((c) => {
                       const on = level === c.value;
                       return (
@@ -120,7 +120,7 @@ export default function HomePage() {
                           onClick={() => setLevel(c.value)}
                           aria-pressed={on}
                           className={
-                            "rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow] duration-[var(--dur-fast)] " +
+                            "rounded-[var(--radius-md)] border px-3 py-3 text-center transition-[border-color,background-color,box-shadow] duration-[var(--dur-fast)] " +
                             (on
                               ? "border-[var(--color-accent)] bg-[var(--color-accent-ghost)] shadow-[var(--glow)]"
                               : "border-[var(--color-paper-4)] bg-[var(--color-paper-2)] hover:border-[var(--color-ink-4)]")
@@ -136,35 +136,45 @@ export default function HomePage() {
                           >
                             {c.label}
                           </span>
-                          <span className="block mt-0.5 text-[var(--text-xs)] text-[var(--color-ink-3)] leading-snug">
-                            {c.hint}
+                          <span className="block mt-0.5 text-[var(--text-xs)] text-[var(--color-ink-3)] whitespace-nowrap">
+                            {c.anchor}
                           </span>
                         </button>
                       );
                     })}
                   </div>
+                  <p className="mt-2.5 text-[var(--text-sm)] text-[var(--color-ink-2)] leading-relaxed">
+                    {LEVEL_CHOICES.find((c) => c.value === level)?.detail}
+                  </p>
                 </fieldset>
 
                 {/* optional: let the writing speak instead of the self-rating */}
-                <div>
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/50 p-4">
                   <button
                     type="button"
                     onClick={() => setShowSample(!showSample)}
-                    className="flex items-center gap-2 text-[var(--text-sm)] text-[var(--color-accent)] hover:text-[var(--color-accent-hot)] transition-colors duration-[var(--dur-fast)]"
+                    aria-expanded={showSample}
+                    className="flex w-full items-start gap-3 text-left"
                   >
-                    <FileText size={14} />
-                    {showSample
-                      ? "Hide writing sample"
-                      : "Or paste something you've written about it"}
+                    <FileText
+                      size={16}
+                      className="mt-0.5 shrink-0 text-[var(--color-accent)]"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[var(--text-base)] font-medium text-[var(--color-ink)] leading-tight">
+                        Already know a bit? Show us instead
+                      </span>
+                      <span className="block mt-0.5 text-[var(--text-sm)] text-[var(--color-ink-3)] leading-snug">
+                        Paste something you&apos;ve written and we&apos;ll work
+                        out what you already understand.
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-[var(--text-sm)] text-[var(--color-accent)]">
+                      {showSample ? "Hide" : "Add"}
+                    </span>
                   </button>
                   {showSample && (
                     <div className="mt-3">
-                      <p className="mb-2 text-[var(--text-sm)] text-[var(--color-ink-3)] leading-relaxed">
-                        Paste your notes, an answer you wrote, or material
-                        you&apos;ve been studying. We&apos;ll read it to work out
-                        what you actually understand — and start your map with
-                        real values instead of zeros.
-                      </p>
                       <textarea
                         value={sample}
                         onChange={(e) => setSample(e.target.value)}

@@ -165,11 +165,17 @@ legitimate neighbouring subject — so the learner is told what the problem is
 instead of watching a request fail. Hard safety blocks are caught separately
 and surfaced with an honest explanation.
 
+Three verdicts, not two. TEACHABLE builds the course. DECLINED refuses on
+policy grounds with a stated reason. UNINTELLIGIBLE rejects input that is not
+a recognisable subject at all — keyboard mashing and random characters — 
+because guessing a plausible course out of gibberish would be fabricating
+content, which is exactly what the rules prohibit. A merely vague subject
+("science") is not unintelligible and still builds.
+
 The distinction the prompt enforces: refuse on what the learner is asking to
 enable, not on whether the subject is uncomfortable. Verified — "how to
 synthesise methamphetamine at home" is declined, while "the pharmacology of
-amphetamines" and "the Holocaust" both build normally, and a nonsense topic is
-interpreted generously rather than refused.
+amphetamines" and "the Holocaust" both build normally.
 
 Refusals render as a settled outcome and never offer a retry, because
 retrying a policy decline cannot succeed. Only genuinely transient failures

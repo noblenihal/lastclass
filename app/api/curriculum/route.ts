@@ -23,7 +23,10 @@ const Body = z.object({
 const schema = {
   type: "object",
   properties: {
-    teachable: { type: "boolean" },
+    verdict: {
+      type: "string",
+      enum: ["TEACHABLE", "DECLINED", "UNINTELLIGIBLE"],
+    },
     refusal: { type: "string" },
     topic_type: { type: "string", enum: ["THEORY", "PRACTICAL", "HYBRID"] },
     type_reason: { type: "string" },
@@ -69,7 +72,7 @@ const schema = {
     },
   },
   required: [
-    "teachable",
+    "verdict",
     "refusal",
     "topic_type",
     "type_reason",
@@ -81,7 +84,7 @@ const schema = {
 };
 
 interface Raw {
-  teachable: boolean;
+  verdict: "TEACHABLE" | "DECLINED" | "UNINTELLIGIBLE";
   refusal: string;
   topic_type: Session["topicType"];
   type_reason: string;
@@ -166,28 +169,35 @@ every starting_mastery to 0 with mastery_reason "No evidence yet." Do not
 invent mastery the learner has not demonstrated.`
 }
 
-First decide whether you can responsibly build this curriculum.
+First classify the request. Set verdict to exactly one of:
 
-Set teachable=false, and put a plain, specific reason in refusal, if the topic
-asks you to teach something you should not — instructions for causing serious
-harm, material that sexualises minors, targeted harassment of a real person,
-or anything else you would decline. Say WHAT the problem is in one or two
-sentences, address the learner directly as "you", and where a legitimate
-neighbouring subject exists, name it as an alternative. Do not be preachy and
-do not lecture — be brief and useful.
+UNINTELLIGIBLE — the input is not a recognisable subject: keyboard mashing
+("asdkjfh"), random characters, a single meaningless fragment, or text in no
+language you can identify. Do NOT try to rescue it by guessing what they might
+have meant — inventing a course for gibberish would be fabricating content.
+Put a short, friendly line in refusal telling them it does not look like a
+topic and asking for a real one. A real but very broad subject ("science") is
+NOT unintelligible — build the best course you can for it.
 
-Note that difficult, dark, or upsetting subjects are usually still teachable:
-history of atrocities, disease, drug pharmacology, weapons in a historical or
-policy context, extremist movements as a subject of study. Refuse on the basis
-of what the learner is asking you to enable, not on whether the subject is
-uncomfortable. If the topic is merely vague or nonsense, that is NOT a refusal
-— set teachable=true and interpret it as generously as you can.
+DECLINED — it is a real request, but it asks you to teach something you should
+not: instructions for causing serious harm, material that sexualises minors,
+targeted harassment of a real person, or similar. Put a plain, specific reason
+in refusal: say WHAT the problem is in one or two sentences, address the
+learner as "you", and name a legitimate neighbouring subject if one exists.
+Do not be preachy.
 
-If teachable=false, still return valid values for the remaining fields (an
-empty concepts array and an empty levels array are fine) — they will be
-discarded.
+Note that difficult, dark or upsetting subjects are usually still TEACHABLE:
+the history of atrocities, disease, drug pharmacology, weapons in a historical
+or policy context, extremist movements as an object of study. Decline on the
+basis of what the learner is asking you to ENABLE, never on whether the
+subject is uncomfortable.
 
-If teachable=true, set refusal to an empty string and produce:
+TEACHABLE — anything else.
+
+For UNINTELLIGIBLE and DECLINED, return empty arrays for concepts and levels;
+they are discarded.
+
+If TEACHABLE, set refusal to an empty string and produce:
 
 1. topic_type — is mastering this mostly THEORY (understanding ideas),
    mostly PRACTICAL (performing a skill), or HYBRID? Judge honestly:
@@ -207,7 +217,21 @@ Titles should sound like a real teacher wrote them. Be specific, never generic.`
       schema,
     });
 
-    if (raw.teachable === false) {
+    if (raw.verdict === "UNINTELLIGIBLE") {
+      // Guessing a subject out of gibberish would be fabricating a course.
+      return NextResponse.json(
+        {
+          error:
+            raw.refusal?.trim() ||
+            "That doesn't look like a topic. Try naming something you want to learn.",
+          kind: "unintelligible",
+          retryable: true,
+        },
+        { status: 422 },
+      );
+    }
+
+    if (raw.verdict === "DECLINED") {
       return NextResponse.json(
         {
           error:
