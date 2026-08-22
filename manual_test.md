@@ -1,6 +1,6 @@
 # LastClass — end-to-end test script
 
-**Live:** https://promptwar-private-doz1b2q88-nihal-guptas-projects.vercel.app
+**Live:** https://promptwar-private-cih8bkswn-nihal-guptas-projects.vercel.app
 **Repo:** https://github.com/noblenihal/lastclass
 
 > Use **Chrome**. Speech recognition is Chrome-only, but every voice surface
