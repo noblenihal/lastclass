@@ -4,14 +4,16 @@ import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Camera, Eye, Play, Volume2 } from "lucide-react";
-import { useRequireProfile } from "@/lib/auth";
+import { useAuth, useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
 import { useDictation, useSpeaker } from "@/lib/speech";
 import { RUNGS, RUNG_LABEL } from "@/lib/types";
 import { ThemePicker } from "@/components/ThemePicker";
+import { LevelRail } from "@/components/LevelRail";
 import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
 import { Check, type CheckData } from "@/components/lesson/Check";
 import { Whiteboard, type Beat } from "@/components/lesson/Whiteboard";
+import { politeProps, useMotionSafe } from "@/lib/a11y";
 
 interface Row {
   concept_id: string;
@@ -100,7 +102,7 @@ export default function LevelPage({
   if (!profile) return null;
   if (!session) {
     return (
-      <main className="flex-1 grid place-items-center px-6">
+      <main id="main" className="flex-1 grid place-items-center px-6">
         <div className="text-center">
           <p className="text-[var(--color-ink-2)]">No topic loaded.</p>
           <Button className="mt-4" onClick={() => router.push("/")}>
@@ -112,6 +114,7 @@ export default function LevelPage({
   }
 
   const level = session.levels.find((l) => l.n === num);
+  const mastered = session.concepts.filter((c) => c.mastery >= 0.8).length;
 
   function finish(correct: boolean, conceptId: string) {
     nudgeMastery(conceptId, correct ? 0.3 : -0.1);
@@ -120,20 +123,38 @@ export default function LevelPage({
   }
 
   return (
-    <main className="flex-1 px-5 py-5 sm:px-8">
-      <header className="mb-8 flex items-center justify-between gap-4">
-        <Button variant="quiet" onClick={() => router.push("/learn")}>
-          <ArrowLeft size={15} /> Back
-        </Button>
-        <div className="flex items-center gap-3">
-          <Eyebrow>
-            Level {num} · {RUNG_LABEL[rung]}
-          </Eyebrow>
-          <ThemePicker />
+    <main id="main" className="flex flex-1 flex-col">
+      <header className="flex items-center justify-between gap-4 border-b border-[var(--color-paper-3)] px-5 py-3.5 sm:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <Button
+            variant="quiet"
+            onClick={() => router.push("/learn")}
+            aria-label="Back to concept map"
+            className="!px-2"
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+          </Button>
+          <span className="min-w-0">
+            <span className="block truncate text-[var(--text-lg)] font-medium leading-tight">
+              {session.topic}
+            </span>
+            <span className="block text-[var(--text-xs)] text-[var(--color-ink-3)]">
+              Level {num} · {RUNG_LABEL[rung]}
+            </span>
+          </span>
         </div>
+        <ThemePicker />
       </header>
 
-      <div className="mx-auto max-w-[46rem] pb-16">
+      <div className="grid flex-1 items-start lg:grid-cols-[15rem_1fr]">
+        <LevelRail
+          levels={session.levels}
+          active={num}
+          mastered={mastered}
+          total={session.concepts.length}
+        />
+
+        <div className="px-5 py-6 pb-20 sm:px-8">
         {loading && <Loading rung={rung} topic={session.topic} />}
 
         {error && !loading && (
@@ -152,6 +173,11 @@ export default function LevelPage({
               >
                 {lesson.headline ?? level?.title ?? RUNG_LABEL[rung]}
               </h1>
+              {rung === "Understand" && !session.interest && (
+                <div className="mt-4">
+                  <InterestCapture />
+                </div>
+              )}
             </Reveal>
 
             <Reveal delay={0.08}>
@@ -195,8 +221,54 @@ export default function LevelPage({
             </Reveal>
           </>
         )}
+        </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * Asked on the Compare level, where the answer is used one line later.
+ * Saved to the profile too, so returning learners are only asked once.
+ */
+function InterestCapture() {
+  const { session, setSession } = useSession();
+  const { profile, update } = useAuth();
+  const [value, setValue] = useState(profile?.interest ?? "");
+
+  function save() {
+    const v = value.trim();
+    if (v.length < 2 || !session) return;
+    update({ interest: v });
+    setSession({ ...session, interest: v });
+  }
+
+  return (
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-ghost)] p-4">
+      <label
+        htmlFor="interest"
+        className="block text-[var(--text-base)] font-medium text-[var(--color-ink)]"
+      >
+        What do you already know well?
+      </label>
+      <p className="mb-3 mt-1 text-[var(--text-sm)] leading-relaxed text-[var(--color-ink-2)]">
+        This level explains the hard parts by comparing them to something
+        familiar. Name a hobby, a job, a sport.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <input
+          id="interest"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && save()}
+          placeholder="Cricket, cooking, Formula 1…"
+          className="min-w-[12rem] flex-1 rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)] px-4 py-2.5 text-[var(--text-base)] text-[var(--color-ink)] outline-none transition-[border-color] duration-[var(--dur-fast)] placeholder:text-[var(--color-ink-4)] focus:border-[var(--color-accent)]"
+        />
+        <Button onClick={save} disabled={value.trim().length < 2}>
+          Save
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -210,7 +282,9 @@ function Loading({ rung, topic }: { rung: string; topic: string }) {
 
   // Chalk strokes sketching themselves — the wait shows what is being made.
   return (
-    <div className="rounded-[var(--radius-lg)] border-[6px] p-6"
+    <div
+      {...politeProps()}
+      className="rounded-[var(--radius-lg)] border-[6px] p-6"
       style={{
         borderColor: "oklch(42% 0.055 58)",
         background: "oklch(23% 0.022 155)",
@@ -458,6 +532,7 @@ function Visualise({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
+          {...politeProps()}
           className="mt-3 text-[var(--text-lg)] leading-relaxed text-[var(--color-ink)]"
         >
           {phase === "reply" ? reply : scene?.narration}
@@ -616,7 +691,7 @@ function ApplyTask({
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={image}
-              alt="Your attempt"
+              alt="The photo of your attempt that will be marked"
               className="mt-3 max-h-72 w-full rounded-[var(--radius-md)] object-contain"
             />
           )}
@@ -643,6 +718,7 @@ function ApplyTask({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          {...politeProps()}
           className={
             "rounded-[var(--radius-lg)] border p-5 " +
             (result.passed

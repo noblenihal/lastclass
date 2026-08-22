@@ -27,6 +27,7 @@ import { Seat, type SeatState } from "@/components/Seat";
 import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
 import { ReportCard } from "@/components/ReportCard";
+import { politeProps, useMotionSafe } from "@/lib/a11y";
 
 type Phase = "explaining" | "taking" | "answering" | "ended";
 
@@ -51,6 +52,7 @@ export default function ClassroomPage() {
   const [pending, setPending] = useState<Doubt | null>(null);
   /** Everything the learner has delivered to the class so far. */
   const [blocks, setBlocks] = useState<string[]>([]);
+  const motion$ = useMotionSafe();
   /** Backdrop generated for THIS topic — atmosphere, never a blocker. */
   const [room, setRoom] = useState<string | null>(null);
 
@@ -362,7 +364,7 @@ export default function ClassroomPage() {
   if (!profile) return null;
   if (!session) {
     return (
-      <main className="flex-1 grid place-items-center px-6">
+      <main id="main" className="flex-1 grid place-items-center px-6">
         <div className="text-center">
           <p className="text-[var(--color-ink-2)]">No topic loaded.</p>
           <Button className="mt-4" onClick={() => router.push("/")}>
@@ -451,7 +453,10 @@ export default function ClassroomPage() {
                 );
               })}
             </div>
-            <p className="relative mt-4 text-center text-[var(--text-sm)] text-[var(--color-ink-2)]">
+            <p
+              {...politeProps()}
+              className="relative mt-4 text-center text-[var(--text-sm)] text-[var(--color-ink-2)]"
+            >
               {roomStatus}
             </p>
           </section>
@@ -598,6 +603,7 @@ export default function ClassroomPage() {
               className="mt-8"
             >
               <div
+                {...politeProps()}
                 className={
                   "rounded-[var(--radius-lg)] border p-6 " +
                   (active.severity === 3
@@ -613,7 +619,11 @@ export default function ClassroomPage() {
                     <span className="flex items-center gap-2 text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
                       {byId(active.characterId).name}
                       {speakingId === active.characterId && (
-                        <Volume2 size={13} className="text-[var(--color-accent)]" />
+                        <Volume2
+                          size={13}
+                          aria-label="speaking"
+                          className="text-[var(--color-accent)]"
+                        />
                       )}
                     </span>
                     {(active.depth ?? 0) > 0 && (
@@ -752,6 +762,7 @@ function VoicePad({
   setTyped: (v: boolean) => void;
   placeholder: string;
 }) {
+  const motion$ = useMotionSafe();
   const useKeyboard = typed || !dictation.supported;
 
   return (
@@ -796,7 +807,7 @@ function VoicePad({
                   animate={{ scaleY: [0.4, 1, 0.4] }}
                   transition={{
                     duration: 0.9,
-                    repeat: Infinity,
+                    repeat: motion$.repeat(),
                     delay: i * 0.15,
                     ease: "easeInOut",
                   }}

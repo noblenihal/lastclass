@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check as CheckIcon, X } from "lucide-react";
 import { Button } from "@/components/ui";
+import { politeProps } from "@/lib/a11y";
 
 export interface CheckData {
   question: string;
@@ -33,7 +34,7 @@ export function Check({
         {check.question}
       </h3>
 
-      <div className="mt-4 grid gap-2">
+      <div className="mt-4 grid gap-2" role="radiogroup" aria-label={check.question}>
         {check.options.map((opt, i) => {
           const chosen = picked === i;
           const isAnswer = i === check.correct_index;
@@ -41,6 +42,8 @@ export function Check({
           return (
             <button
               key={i}
+              role="radio"
+              aria-checked={chosen}
               disabled={settled}
               onClick={() => setPicked(i)}
               className={
@@ -54,17 +57,28 @@ export function Check({
                       : "border-[var(--color-paper-3)] opacity-55")
               }
             >
-              <span className="mt-0.5 shrink-0 font-[family-name:var(--font-mono)] text-[var(--text-xs)] text-[var(--color-ink-3)]">
+              <span
+                aria-hidden="true"
+                className="mt-0.5 shrink-0 font-[family-name:var(--font-mono)] text-[var(--text-xs)] text-[var(--color-ink-3)]"
+              >
                 {String.fromCharCode(65 + i)}
               </span>
               <span className="min-w-0 flex-1 text-[var(--color-ink)]">
                 {opt}
               </span>
               {settled && isAnswer && (
-                <CheckIcon size={15} className="mt-0.5 shrink-0 text-[var(--color-accent)]" />
+                <CheckIcon
+                  size={15}
+                  aria-label="Correct answer"
+                  className="mt-0.5 shrink-0 text-[var(--color-accent)]"
+                />
               )}
               {settled && chosen && !isAnswer && (
-                <X size={15} className="mt-0.5 shrink-0 text-[var(--color-urgent)]" />
+                <X
+                  size={15}
+                  aria-label="Your answer, incorrect"
+                  className="mt-0.5 shrink-0 text-[var(--color-urgent)]"
+                />
               )}
             </button>
           );
@@ -77,6 +91,7 @@ export function Check({
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
           className="mt-5"
+          {...politeProps()}
         >
           <p className="text-[var(--text-base)] leading-relaxed text-[var(--color-ink-2)]">
             <strong

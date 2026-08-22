@@ -39,7 +39,7 @@ export function ReportCard({
         : "Some answers didn't land.";
 
   return (
-    <main className="flex-1 px-6 py-6 sm:px-10">
+    <main id="main" className="flex-1 px-6 py-6 sm:px-10">
       <header className="mb-8">
         <Eyebrow>Class dismissed</Eyebrow>
       </header>

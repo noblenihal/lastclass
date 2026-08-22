@@ -37,7 +37,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex-1 flex flex-col px-6 py-6">
+    <main id="main" className="flex-1 flex flex-col px-6 py-6">
       <div className="flex justify-end">
         <ThemePicker />
       </div>
@@ -59,6 +59,7 @@ export default function LoginPage() {
 
         <form
           className="space-y-5"
+          aria-label="Sign in"
           onSubmit={(e) => {
             e.preventDefault();
             setError("");

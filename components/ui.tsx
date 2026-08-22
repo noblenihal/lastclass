@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { AlertTriangle, Info, Loader2 } from "lucide-react";
+import { useMotionSafe } from "@/lib/a11y";
+import { useId } from "react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 
 /* Fade-only reveal. The atmospheric genre forbids slide and bounce —
@@ -15,11 +17,16 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
+  const motion$ = useMotionSafe();
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={{ opacity: motion$.reduced ? 1 : 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.52, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{
+        duration: motion$.dur(0.52),
+        delay: motion$.reduced ? 0 : delay,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className={className}
     >
       {children}
@@ -61,9 +68,12 @@ export function Button({
     <button
       {...rest}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       className={`${base} ${variants[variant]} ${className}`}
     >
-      {loading && <Loader2 size={15} className="animate-spin" />}
+      {loading && (
+        <Loader2 size={15} className="animate-spin" aria-hidden="true" />
+      )}
       {children}
     </button>
   );
@@ -73,15 +83,21 @@ export function Field({
   label,
   hint,
   className = "",
+  id,
   ...rest
 }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
+  const auto = useId();
+  const fieldId = id ?? auto;
+  const hintId = hint ? `${fieldId}-hint` : undefined;
   return (
-    <label className="block">
+    <label className="block" htmlFor={fieldId}>
       <span className="block text-[var(--text-base)] font-medium text-[var(--color-ink)] mb-2">
         {label}
       </span>
       <input
         {...rest}
+        id={fieldId}
+        aria-describedby={hintId}
         className={
           "w-full rounded-[var(--radius-md)] bg-[var(--color-paper-2)] " +
           "border border-[var(--color-paper-4)] px-4 py-3 text-[var(--text-lg)] " +
@@ -92,7 +108,10 @@ export function Field({
         }
       />
       {hint && (
-        <span className="block mt-2 text-[var(--text-sm)] text-[var(--color-ink-3)]">
+        <span
+          id={hintId}
+          className="block mt-2 text-[var(--text-sm)] text-[var(--color-ink-3)]"
+        >
           {hint}
         </span>
       )}
@@ -137,11 +156,13 @@ export function ErrorNote({
         {declined ? (
           <Info
             size={15}
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-[var(--color-ink-3)]"
           />
         ) : (
           <AlertTriangle
             size={15}
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-[var(--color-urgent)]"
           />
         )}

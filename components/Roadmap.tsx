@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Lock, X } from "lucide-react";
 import { conceptDepths, type Concept } from "@/lib/types";
 import { Button } from "@/components/ui";
+import { politeProps, useMotionSafe } from "@/lib/a11y";
 
 interface Layer {
   brief: string;
@@ -37,6 +38,9 @@ export function Roadmap({
   const [layers, setLayers] = useState<Layer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const motion$ = useMotionSafe();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const returnTo = useRef<HTMLElement | null>(null);
 
   // Route order: prerequisite depth first, so the path is walkable.
   const depths = conceptDepths(concepts);
@@ -77,17 +81,35 @@ export function Roadmap({
   );
 
   function openStop(c: Concept) {
+    // Remember where focus came from so closing returns it to that stop.
+    returnTo.current = document.activeElement as HTMLElement | null;
     setOpenId(c.id);
     setLayers([]);
     setError("");
     void fetchLayer(c, 0, []);
   }
 
+  const close = useCallback(() => {
+    setOpenId(null);
+    returnTo.current?.focus();
+  }, []);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenId(null);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  }, [close]);
+
+  // Move focus into the drawer when it opens, and lock the page behind it.
+  useEffect(() => {
+    if (!openId) return;
+    closeRef.current?.focus();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [openId]);
 
   const learned = concepts.filter((c) => c.mastery >= 0.8).length;
 
@@ -118,6 +140,9 @@ export function Roadmap({
               <li key={c.id} className="relative">
                 <button
                   onClick={() => openStop(c)}
+                  aria-label={`Stop ${i + 1}: ${c.name}. ${
+                    pct === 0 ? "Not started" : `${pct} percent mastered`
+                  }. Open detail.`}
                   className="group flex w-full items-start gap-4 rounded-[var(--radius-md)] py-3 pl-1 pr-3 text-left transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-paper-2)]"
                 >
                   {/* the stop */}
@@ -140,6 +165,7 @@ export function Roadmap({
                         cy="24"
                         r="20"
                         fill="none"
+                        aria-hidden="true"
                         stroke={
                           weak
                             ? "var(--color-urgent)"
@@ -152,7 +178,10 @@ export function Roadmap({
                         animate={{
                           strokeDashoffset: 2 * Math.PI * 20 * (1 - c.mastery),
                         }}
-                        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{
+                          duration: motion$.dur(0.9),
+                          ease: [0.16, 1, 0.3, 1],
+                        }}
                       />
                     </svg>
                     <span
@@ -213,7 +242,8 @@ export function Roadmap({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              onClick={() => setOpenId(null)}
+              onClick={close}
+              aria-hidden="true"
               className="fixed inset-0 z-40 bg-[oklch(0%_0_0/0.45)]"
             />
             <motion.aside
@@ -224,7 +254,8 @@ export function Roadmap({
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
               className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[30rem] flex-col border-l border-[var(--color-paper-4)] bg-[var(--color-paper)] shadow-[-16px_0_48px_-16px_rgb(0_0_0/0.4)]"
               role="dialog"
-              aria-label={open.name}
+              aria-modal="true"
+              aria-label={`${open.name} — concept detail`}
             >
               <header className="flex items-start justify-between gap-3 border-b border-[var(--color-paper-3)] px-5 py-4">
                 <div className="min-w-0">
@@ -237,8 +268,9 @@ export function Roadmap({
                   </h3>
                 </div>
                 <button
-                  onClick={() => setOpenId(null)}
-                  aria-label="Close"
+                  ref={closeRef}
+                  onClick={close}
+                  aria-label="Close concept detail"
                   className="grid size-8 shrink-0 place-items-center rounded-full text-[var(--color-ink-3)] transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-paper-3)] hover:text-[var(--color-ink)]"
                 >
                   <X size={16} />
@@ -302,7 +334,7 @@ export function Roadmap({
                 ))}
 
                 {loading && (
-                  <div className="space-y-2">
+                  <div className="space-y-2" {...politeProps()} aria-label="Loading explanation">
                     {[0, 1, 2].map((i) => (
                       <motion.div
                         key={i}
@@ -310,7 +342,7 @@ export function Roadmap({
                         animate={{ opacity: [0.4, 0.8, 0.4] }}
                         transition={{
                           duration: 1.4,
-                          repeat: Infinity,
+                          repeat: motion$.repeat(),
                           delay: i * 0.15,
                         }}
                       />
@@ -319,7 +351,10 @@ export function Roadmap({
                 )}
 
                 {error && (
-                  <p className="text-[var(--text-sm)] text-[var(--color-urgent)]">
+                  <p
+                    role="alert"
+                    className="text-[var(--text-sm)] text-[var(--color-urgent)]"
+                  >
                     {error}
                   </p>
                 )}

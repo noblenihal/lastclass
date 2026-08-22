@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { Figure, type FigureData } from "@/components/lesson/Figure";
+import { politeProps, useMotionSafe } from "@/lib/a11y";
 
 export interface Beat {
   concept_id: string;
@@ -46,6 +47,7 @@ export function Whiteboard({
   const [sketches, setSketches] = useState<Record<string, string>>({});
   /** How many entities of the current beat have been spoken yet. */
   const [revealed, setRevealed] = useState(0);
+  const motion$ = useMotionSafe();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playToken = useRef(0);
 
@@ -267,7 +269,7 @@ export function Whiteboard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.28 }}
+            transition={{ duration: motion$.dur(0.28) }}
           >
             <h3
               className="text-center text-[var(--text-xl)] font-medium"
@@ -291,7 +293,10 @@ export function Whiteboard({
                     <motion.figure
                       key={j}
                       animate={{ opacity: out ? 1 : 0.12 }}
-                      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{
+                        duration: motion$.dur(0.7),
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
                       className="overflow-hidden rounded-[var(--radius-md)]"
                     >
                       {img ? (
@@ -331,7 +336,7 @@ export function Whiteboard({
           aria-label="Previous step"
           className="grid size-10 shrink-0 place-items-center rounded-full border border-[var(--color-paper-4)] text-[var(--color-ink-2)] transition-[border-color,color] duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-ink)] disabled:opacity-35"
         >
-          <SkipBack size={16} />
+          <SkipBack size={16} aria-hidden="true" />
         </button>
 
         <button
@@ -340,11 +345,11 @@ export function Whiteboard({
           className="grid size-12 shrink-0 place-items-center rounded-full bg-[var(--color-accent)] text-[var(--on-accent)] transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-accent-hot)]"
         >
           {loadingAudio ? (
-            <Volume2 size={18} className="animate-pulse" />
+            <Volume2 size={18} aria-hidden="true" className="animate-pulse" />
           ) : playing ? (
-            <Pause size={18} />
+            <Pause size={18} aria-hidden="true" />
           ) : (
-            <Play size={18} className="ml-0.5" />
+            <Play size={18} aria-hidden="true" className="ml-0.5" />
           )}
         </button>
 
@@ -354,7 +359,7 @@ export function Whiteboard({
           aria-label="Next step"
           className="grid size-10 shrink-0 place-items-center rounded-full border border-[var(--color-paper-4)] text-[var(--color-ink-2)] transition-[border-color,color] duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-ink)] disabled:opacity-35"
         >
-          <SkipForward size={16} />
+          <SkipForward size={16} aria-hidden="true" />
         </button>
 
         {ready < beats.length && (
@@ -364,13 +369,18 @@ export function Whiteboard({
         )}
 
         {/* scrubber: one segment per beat */}
-        <div className="ml-2 flex flex-1 gap-1">
+        <div
+          className="ml-2 flex flex-1 gap-1"
+          role="group"
+          aria-label={`Lesson steps, ${i + 1} of ${beats.length}`}
+        >
           {beats.map((b, k) => (
             <button
               key={k}
               onClick={() => go(k)}
               aria-label={`Step ${k + 1}: ${b.label}`}
               title={b.label}
+              aria-current={k === i ? "step" : undefined}
               className="group relative h-1.5 flex-1 rounded-full bg-[var(--color-paper-3)]"
             >
               <span
@@ -389,7 +399,10 @@ export function Whiteboard({
       </div>
 
       {/* what is being said, for anyone who can't hear it */}
-      <p className="mt-3 min-h-[3rem] text-[var(--text-base)] leading-relaxed text-[var(--color-ink-2)]">
+      <p
+        {...politeProps()}
+        className="mt-3 min-h-[3rem] text-[var(--text-base)] leading-relaxed text-[var(--color-ink-2)]"
+      >
         {beat.narration}
       </p>
 

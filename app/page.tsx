@@ -66,7 +66,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="flex-1 flex flex-col">
+    <main id="main" className="flex-1 flex flex-col">
       <header className="flex items-center justify-between px-6 py-5 sm:px-10">
         <Eyebrow>LastClass</Eyebrow>
         <div className="flex items-center gap-3">

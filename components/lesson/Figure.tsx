@@ -193,7 +193,12 @@ export function Figure({ figure }: { figure: FigureData }) {
 
   return (
     <figure className="w-full">
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="h-auto w-full"
+        role="img"
+        aria-label={`${figure.kind} diagram: ${nodes.join(", ")}. ${figure.caption}`}
+      >
         {figure.kind === "flow" &&
           (() => {
             const bw = Math.min(130, (W - 60 - (n - 1) * 34) / n);

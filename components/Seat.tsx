@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import type { Character } from "@/lib/characters";
+import { useMotionSafe } from "@/lib/a11y";
 
 export type SeatState = "idle" | "raised" | "deferred" | "speaking" | "satisfied";
 
@@ -37,6 +38,7 @@ export function Seat({
   const up = state === "raised" || state === "speaking";
   const clickable = Boolean(onClick) && (up || state === "deferred");
 
+  const motion$ = useMotionSafe();
   const rock = severity === 3 ? 3.2 : severity === 2 ? 2 : 1.2;
   const rockDur = severity === 3 ? 0.6 : severity === 2 ? 1 : 1.6;
 
@@ -57,19 +59,21 @@ export function Seat({
       <motion.div
         className="relative z-10 h-[7rem] w-[7rem] sm:h-[8rem] sm:w-[8rem]"
         animate={
-          up
-            ? { rotate: [-rock, rock, -rock], y: 0 }
-            : state === "deferred"
-              ? { rotate: [-0.6, 0.6, -0.6], y: 3 }
-              : { rotate: 0, y: 0 }
+          motion$.reduced
+            ? { rotate: 0, y: state === "deferred" ? 3 : 0 }
+            : up
+              ? { rotate: [-rock, rock, -rock], y: 0 }
+              : state === "deferred"
+                ? { rotate: [-0.6, 0.6, -0.6], y: 3 }
+                : { rotate: 0, y: 0 }
         }
         transition={{
           rotate: {
             duration: state === "deferred" ? 4.5 : rockDur,
-            repeat: up || state === "deferred" ? Infinity : 0,
+            repeat: motion$.repeat(up || state === "deferred" ? Infinity : 0),
             ease: "easeInOut",
           },
-          y: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+          y: { duration: motion$.dur(0.4), ease: [0.16, 1, 0.3, 1] },
         }}
         style={{ transformOrigin: "50% 90%" }}
       >
