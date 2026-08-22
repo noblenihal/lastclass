@@ -53,7 +53,8 @@ export default function LearnPage() {
     session.levels.find((l) => !l.passed && l.unlocked) ?? session.levels[4];
   const shown = session.levels.find((l) => l.n === selected) ?? current;
   // Sessions saved before Teach was ungated would otherwise strand the learner.
-  const enterable = shown.unlocked || shown.rung === "Teach";
+  const enterable =
+    shown.unlocked || shown.rung === "Teach" || shown.n === 1;
 
   return (
     <main className="flex-1 flex flex-col">
@@ -172,14 +173,13 @@ export default function LearnPage() {
                     <Button onClick={() => router.push("/classroom")}>
                       Enter the classroom
                     </Button>
-                  ) : shown.rung === "Understand" ? (
-                    <InterestCapture />
                   ) : (
-                    <p className="text-[var(--text-sm)] text-[var(--color-ink-3)]">
-                      This level is being built. Level 5 is playable now —
-                      {p?.name ? ` ${p.name}, ` : " "}
-                      you can jump straight to teaching.
-                    </p>
+                    <div className="space-y-4">
+                      {shown.rung === "Understand" && <InterestCapture />}
+                      <Button onClick={() => router.push(`/level/${shown.n}`)}>
+                        {shown.passed ? "Do it again" : "Start level"}
+                      </Button>
+                    </div>
                   )}
                 </div>
 

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   Hand,
+  Plus,
   Keyboard,
   Mic,
   MicOff,
@@ -48,6 +49,8 @@ export default function ClassroomPage() {
   const [asking, setAsking] = useState(false);
   /** A follow-up the current character is about to press with. */
   const [pending, setPending] = useState<Doubt | null>(null);
+  /** Everything the learner has delivered to the class so far. */
+  const [blocks, setBlocks] = useState<string[]>([]);
   /** Backdrop generated for THIS topic — atmosphere, never a blocker. */
   const [room, setRoom] = useState<string | null>(null);
 
@@ -120,12 +123,30 @@ export default function ClassroomPage() {
   );
 
   /* ---- take doubts: the explanation becomes the assessment ---- */
+  /** Commits the current draft to the lecture as its own card. */
+  function addBlock() {
+    const t = dictation.transcript.trim();
+    if (t.length < 20) {
+      setError("Say a bit more before adding it to the lecture.");
+      return;
+    }
+    setError("");
+    setBlocks((prev) => [...prev, t]);
+    dictation.reset();
+  }
+
   async function takeDoubts() {
     if (!session) return;
-    const transcript = dictation.transcript.trim();
+    const draft = dictation.transcript.trim();
+    const all = draft.length >= 20 ? [...blocks, draft] : blocks;
+    const transcript = all.join("\n\n");
     if (transcript.length < 40) {
       setError("Explain a bit more first so the class has something to ask about.");
       return;
+    }
+    if (draft.length >= 20) {
+      setBlocks(all);
+      dictation.reset();
     }
     setError("");
     setBusy(true);
@@ -360,6 +381,7 @@ export default function ClassroomPage() {
         topic={session.topic}
         onRestart={() => {
           setDoubts([]);
+          setBlocks([]);
           askedRef.current = [];
           setActiveId(null);
           setReply(null);
@@ -467,23 +489,64 @@ export default function ClassroomPage() {
                 </li>
               </ol>
 
+              {blocks.length > 0 && (
+                <ol className="mt-5 space-y-2.5">
+                  {blocks.map((b, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.32 }}
+                      className="rounded-[var(--radius-md)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/70 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)]">
+                          Point {i + 1}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setBlocks((prev) => prev.filter((_, k) => k !== i))
+                          }
+                          className="text-[var(--text-xs)] text-[var(--color-ink-4)] transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-urgent)]"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="mt-1.5 text-[var(--text-base)] leading-relaxed text-[var(--color-ink)]">
+                        {b}
+                      </p>
+                    </motion.li>
+                  ))}
+                </ol>
+              )}
+
               <VoicePad
                 dictation={dictation}
                 typed={typed}
                 setTyped={setTyped}
-                placeholder="Explain it in your own words. Start with what it is…"
+                placeholder={
+                  blocks.length
+                    ? "Add another point…"
+                    : "Explain it in your own words. Start with what it is…"
+                }
               />
 
               <ErrorNote>{error}</ErrorNote>
 
-              <Button
-                onClick={takeDoubts}
-                loading={busy}
-                className="mt-5 w-full"
-              >
-                <Hand size={16} />
-                {busy ? "Reading your explanation…" : "Take questions"}
-              </Button>
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                <Button variant="ghost" onClick={addBlock} disabled={busy}>
+                  <Plus size={15} /> Add this point
+                </Button>
+                <Button onClick={takeDoubts} loading={busy}>
+                  <Hand size={16} />
+                  {busy ? "Reading it…" : "Take questions"}
+                </Button>
+              </div>
+              <p className="mt-2 text-[var(--text-sm)] text-[var(--color-ink-3)]">
+                {blocks.length
+                  ? `${blocks.length} point${blocks.length === 1 ? "" : "s"} delivered. Add more, or hand over to the class.`
+                  : "Add points one at a time, or hand over as soon as you're ready."}
+              </p>
             </section>
           </Reveal>
         )}
