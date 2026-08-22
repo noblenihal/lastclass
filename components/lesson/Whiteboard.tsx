@@ -10,6 +10,8 @@ export interface Beat {
   label: string;
   detail: string;
   narration: string;
+  /** Things the narration names, drawn as each is spoken. */
+  entities?: { label: string; subject: string; phrase: string }[];
   figure: FigureData;
 }
 
@@ -40,6 +42,10 @@ export function Whiteboard({
   const cache = useRef<Map<number, string>>(new Map());
   /** Dedupes concurrent requests for the same beat. */
   const inflight = useRef<Map<number, Promise<string | null>>>(new Map());
+  /** Chalk drawings keyed "beat:entity". Enrichment only — never blocks. */
+  const [sketches, setSketches] = useState<Record<string, string>>({});
+  /** How many entities of the current beat have been spoken yet. */
+  const [revealed, setRevealed] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playToken = useRef(0);
 
@@ -91,6 +97,7 @@ export function Whiteboard({
     async (idx: number) => {
       const token = ++playToken.current;
       setI(idx);
+      setRevealed(0);
       setSeen((prev) => new Set(prev).add(idx));
       setLoadingAudio(true);
 
@@ -104,11 +111,27 @@ export function Whiteboard({
       if (url) {
         const audio = new Audio(url);
         audioRef.current = audio;
+
+        // Speech is near-linear in characters, so the position of an entity's
+        // phrase inside the narration is a good proxy for when it is said.
+        const b = beats[idx];
+        const marks = (b.entities ?? []).map((e) => {
+          const at = b.narration.indexOf(e.phrase);
+          return at < 0 ? 0 : at / Math.max(1, b.narration.length);
+        });
+        audio.ontimeupdate = () => {
+          if (!audio.duration) return;
+          const f = audio.currentTime / audio.duration;
+          const n = marks.filter((m) => f >= m).length;
+          setRevealed((prev) => (n > prev ? n : prev));
+        };
+
         await new Promise<void>((resolve) => {
           audio.onended = () => resolve();
           audio.onerror = () => resolve();
           audio.play().catch(() => resolve());
         });
+        setRevealed((b.entities ?? []).length);
       } else {
         // no voice available — hold long enough to read the figure
         await new Promise((r) => setTimeout(r, 3200));
@@ -149,6 +172,44 @@ export function Whiteboard({
     };
   }, [beats, fetchAudio]);
 
+  /**
+   * Draws the chalk illustrations in the background. These are enrichment on
+   * top of the diagram, so they arrive whenever they arrive and a failure is
+   * simply never shown.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const queue = beats.flatMap((b, k) =>
+        (b.entities ?? []).map((e, j) => ({ key: `${k}:${j}`, subject: e.subject })),
+      );
+      const workers = Array.from({ length: 3 }, async () => {
+        while (!cancelled) {
+          const job = queue.shift();
+          if (!job) return;
+          try {
+            const res = await fetch("/api/lesson/sketch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ subject: job.subject }),
+            });
+            if (!res.ok) continue;
+            const data = await res.json();
+            if (!cancelled && data.image) {
+              setSketches((prev) => ({ ...prev, [job.key]: data.image }));
+            }
+          } catch {
+            /* no drawing for this entity — the diagram still carries it */
+          }
+        }
+      });
+      await Promise.all(workers);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [beats]);
+
   useEffect(() => stopAudio, [stopAudio]);
 
   function toggle() {
@@ -168,6 +229,7 @@ export function Whiteboard({
     setLoadingAudio(false);
     setI(clamped);
     setSeen((prev) => new Set(prev).add(clamped));
+    setRevealed(playing ? 0 : (beats[clamped].entities ?? []).length);
     if (playing) void run(clamped);
   }
 
@@ -219,7 +281,42 @@ export function Whiteboard({
             >
               {beat.detail}
             </p>
-            <div className="mt-3">
+            <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center">
+              {/* things appear as the narration names them */}
+              <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+                {(beat.entities ?? []).map((e, j) => {
+                  const img = sketches[`${i}:${j}`];
+                  const out = j < revealed;
+                  return (
+                    <motion.figure
+                      key={j}
+                      animate={{ opacity: out ? 1 : 0.12 }}
+                      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden rounded-[var(--radius-md)]"
+                    >
+                      {img ? (
+                        <img
+                          src={img}
+                          alt={e.label}
+                          className="h-[7.5rem] w-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="h-[7.5rem] w-full"
+                          style={{ background: "oklch(27% 0.024 155)" }}
+                        />
+                      )}
+                      <figcaption
+                        className="px-1 pt-1 text-center text-[var(--text-xs)]"
+                        style={{ color: "oklch(84% 0.025 85)" }}
+                      >
+                        {e.label}
+                      </figcaption>
+                    </motion.figure>
+                  );
+                })}
+              </div>
+
               <Figure figure={beat.figure} />
             </div>
           </motion.div>

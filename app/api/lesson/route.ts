@@ -53,6 +53,18 @@ const SCHEMAS = {
             label: { type: "string" },
             detail: { type: "string" },
             narration: { type: "string" },
+            entities: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  label: { type: "string" },
+                  subject: { type: "string" },
+                  phrase: { type: "string" },
+                },
+                required: ["label", "subject", "phrase"],
+              },
+            },
             figure: {
               type: "object",
               properties: {
@@ -66,7 +78,14 @@ const SCHEMAS = {
               required: ["kind", "nodes", "caption"],
             },
           },
-          required: ["concept_id", "label", "detail", "narration", "figure"],
+          required: [
+            "concept_id",
+            "label",
+            "detail",
+            "narration",
+            "entities",
+            "figure",
+          ],
         },
       },
       check: CHECK,
@@ -151,6 +170,18 @@ every beat must have something worth drawing.
     sentences of natural spoken English. It must describe what is appearing
     on the board as it appears, and connect to the beat before, so the board
     builds an argument rather than a list.
+  · entities — 2 or 3 things the narration NAMES, in the order they are first
+    mentioned, each of which gets drawn on the board at the moment it is
+    said. For each:
+      label  — what it is, 1-3 words, shown under the drawing
+      subject — what to draw, 5-12 words, a concrete physical thing a teacher
+        could sketch: "a bowl of rice grains soaking in water", "a ball
+        falling towards the ground". Never abstract, never text or symbols,
+        never a chart or graph.
+      phrase — the EXACT words from this beat's narration, copied verbatim,
+        where this entity is first mentioned. It must appear character for
+        character in the narration above, so the drawing can be timed to the
+        moment it is spoken. Keep it to 2-5 words.
   · figure — the diagram drawn for this beat. Pick the kind that genuinely
     fits the idea; do not default to "flow" for everything:
       flow    — a sequence of steps, left to right (a process, a pipeline)
