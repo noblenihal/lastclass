@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -47,6 +47,35 @@ export default function ClassroomPage() {
   const [asking, setAsking] = useState(false);
   /** A follow-up the current character is about to press with. */
   const [pending, setPending] = useState<Doubt | null>(null);
+  /** Backdrop generated for THIS topic — atmosphere, never a blocker. */
+  const [room, setRoom] = useState<string | null>(null);
+
+  // The room is dressed for the subject: a gravity class and a knot-tying
+  // class should not be taught in the same generic space. Generated once on
+  // entry and faded in behind the seats; the class runs fine without it.
+  useEffect(() => {
+    if (!session) return;
+    let alive = true;
+    fetch("/api/room", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic: session.topic,
+        topicType: session.topicType,
+        concepts: session.concepts.map((c) => c.name),
+      }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive && d?.image) setRoom(d.image as string);
+      })
+      .catch(() => {
+        /* no backdrop — the seats stand on their own */
+      });
+    return () => {
+      alive = false;
+    };
+  }, [session?.id, session?.topic, session?.topicType]);
 
   const dictation = useDictation();
   const answer = useDictation();
@@ -353,10 +382,34 @@ export default function ClassroomPage() {
         {/* ---------- the room ---------- */}
         <Reveal>
           <section
-            className="rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/50 px-3 py-5"
+            className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-paper-4)] bg-[var(--color-paper-2)]/50 px-3 py-5"
             aria-label="The classroom"
           >
-            <div className="flex justify-center gap-1 sm:gap-3 flex-wrap">
+            {/* the room, dressed for this subject */}
+            <AnimatePresence>
+              {room && (
+                <motion.div
+                  key="room"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute inset-0 -z-10 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${room})` }}
+                  aria-hidden="true"
+                />
+              )}
+            </AnimatePresence>
+            {/* scrim keeps the students and text legible over any backdrop */}
+            <div
+              className="absolute inset-0 -z-10"
+              style={{
+                background:
+                  "linear-gradient(to bottom, oklch(15% 0.012 55 / 0.55), oklch(15% 0.012 55 / 0.86))",
+              }}
+              aria-hidden="true"
+            />
+
+            <div className="relative flex justify-center gap-1 sm:gap-3 flex-wrap">
               {CHARACTERS.map((c) => {
                 const first = doubts.find(
                   (d) => d.characterId === c.id && d.status === "raised",
@@ -372,7 +425,7 @@ export default function ClassroomPage() {
                 );
               })}
             </div>
-            <p className="mt-4 text-center text-[var(--text-sm)] text-[var(--color-ink-3)]">
+            <p className="relative mt-4 text-center text-[var(--text-sm)] text-[var(--color-ink-2)]">
               {roomStatus}
             </p>
           </section>

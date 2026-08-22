@@ -108,6 +108,18 @@ Run the **same topic at two different depths** and compare.
 2. **Expect:** five animal students at desks, all dimmed, no hands up.
    Status line: *"No questions yet — explain first."*
 
+### 2.1b The room is dressed for your subject
+1. On entering, the seats appear immediately over a dark ground. **Wait ~12s.**
+2. **Expect:** a classroom backdrop fades in behind the students that is
+   generated *for your specific topic* — and it changes with the topic type:
+   - `gravity` (theory) → a lecture hall, chalkboard covered in orbits, a
+     falling-apple tree, force arrows, a globe on the shelf
+   - `tying a bowline knot` (practical) → a rope workshop: spools, coils,
+     pliers, a bench vise, a pinned board showing the rabbit method
+3. A scrim sits over it so the students and text stay legible.
+4. **If it never arrives that is fine by design** — the backdrop is
+   atmosphere, never a blocker, and the class runs identically without it.
+
 ### 2.2 Explain the topic — deliberately badly
 This is the important part. **Give a shallow explanation on purpose** so you
 can see the system catch it. For recursion, paste or say exactly this:

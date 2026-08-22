@@ -79,6 +79,8 @@ Built and deployed in phases; every phase is a working, deployed increment.
   Phase 2 — the Classroom (teach-back, raised hands, spoken characters)
   Phase 3 — persistent workspace UI, legible learning-path map, depth
             calibration and level detection from a writing sample
+  Phase 4 — classroom depth: follow-up questioning, Ask the Master, and a
+            generated classroom backdrop dressed for the subject
 
 ================================================================
 4. GEN AI SERVICES UTILISED, AND WHERE
@@ -122,6 +124,16 @@ so responses are guaranteed-parseable rather than prompt-and-hope)
                        back-and-forth needs no sockets and no extra latency;
                        session state lives client-side and the server stays
                        stateless.
+
+MODEL: gemini-3.1-flash-image — image generation ("Nano Banana")
+
+  /api/room            Generates the classroom itself, dressed for the subject
+                       being taught and routed by topic type: a theory topic
+                       gets a lecture hall with a chalkboard sketched in that
+                       subject's diagrams, a practical topic gets a workshop
+                       with the relevant tools and a pinned instruction board.
+                       Generated on entry and faded in behind the students;
+                       purely atmospheric, so a failure never blocks the class.
 
 MODEL: gemini-3.1-flash-tts-preview — text to speech
 
