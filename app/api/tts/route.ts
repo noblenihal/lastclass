@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { generateSpeech } from "@/lib/gemini";
+import { errorResponse, generateSpeech } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[tts]", err);
-    return NextResponse.json({ error: "Speech unavailable" }, { status: 502 });
+    const { body, status } = errorResponse(err, "Speech unavailable");
+    return NextResponse.json(body, { status });
   }
 }

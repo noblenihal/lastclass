@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { generateJSON } from "@/lib/gemini";
+import { errorResponse, generateJSON } from "@/lib/gemini";
 import { CHARACTERS, type Doubt } from "@/lib/characters";
 import { learnerContext } from "@/lib/context";
 
@@ -165,9 +165,7 @@ Raise 3 to 4 doubts. Rules:
     return NextResponse.json({ doubts });
   } catch (err) {
     console.error("[doubts]", err);
-    return NextResponse.json(
-      { error: "The room went quiet. Try explaining again." },
-      { status: 502 },
-    );
+    const { body, status } = errorResponse(err, "The room went quiet. Try explaining again.");
+    return NextResponse.json(body, { status });
   }
 }

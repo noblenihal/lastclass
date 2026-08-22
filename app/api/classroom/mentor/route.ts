@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { generateJSON } from "@/lib/gemini";
+import { errorResponse, generateJSON } from "@/lib/gemini";
 import { DEPTH_RULE } from "@/lib/context";
 import type { MentorNote } from "@/lib/characters";
 
@@ -84,9 +84,7 @@ Address the learner directly as "you". Never address the student.`,
     return NextResponse.json(note);
   } catch (err) {
     console.error("[mentor]", err);
-    return NextResponse.json(
-      { error: "The Master is thinking. Try again." },
-      { status: 502 },
-    );
+    const { body, status } = errorResponse(err, "The Master is thinking. Try again.");
+    return NextResponse.json(body, { status });
   }
 }

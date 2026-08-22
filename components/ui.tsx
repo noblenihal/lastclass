@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Info, Loader2 } from "lucide-react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 
 /* Fade-only reveal. The atmospheric genre forbids slide and bounce —
@@ -108,14 +108,62 @@ export function Eyebrow({ children }: { children: ReactNode }) {
   );
 }
 
-export function ErrorNote({ children }: { children: ReactNode }) {
+/**
+ * Errors carry a reason, not a shrug. A refusal is shown as a settled outcome
+ * with an explanation; only genuinely retryable failures invite a retry.
+ */
+export function ErrorNote({
+  children,
+  tone = "error",
+  onRetry,
+}: {
+  children: ReactNode;
+  tone?: "error" | "declined";
+  onRetry?: () => void;
+}) {
   if (!children) return null;
+  const declined = tone === "declined";
   return (
-    <p
+    <div
       role="alert"
-      className="rounded-[var(--radius-md)] border border-[color:var(--color-urgent-ghost)] bg-[var(--color-urgent-ghost)] px-4 py-3 text-[var(--text-sm)] text-[var(--color-ink)]"
+      className={
+        "rounded-[var(--radius-md)] border px-4 py-3 " +
+        (declined
+          ? "border-[var(--color-paper-4)] bg-[var(--color-paper-3)]/60"
+          : "border-[color:var(--color-urgent-ghost)] bg-[var(--color-urgent-ghost)]")
+      }
     >
-      {children}
-    </p>
+      <div className="flex gap-2.5">
+        {declined ? (
+          <Info
+            size={15}
+            className="mt-0.5 shrink-0 text-[var(--color-ink-3)]"
+          />
+        ) : (
+          <AlertTriangle
+            size={15}
+            className="mt-0.5 shrink-0 text-[var(--color-urgent)]"
+          />
+        )}
+        <div className="min-w-0">
+          {declined && (
+            <span className="block text-[var(--text-xs)] uppercase tracking-[0.14em] text-[var(--color-ink-3)] mb-1">
+              Not something we can teach
+            </span>
+          )}
+          <p className="text-[var(--text-sm)] leading-relaxed text-[var(--color-ink)]">
+            {children}
+          </p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="mt-2 text-[var(--text-sm)] text-[var(--color-accent)] hover:text-[var(--color-accent-hot)] transition-colors duration-[var(--dur-fast)]"
+            >
+              Try again
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

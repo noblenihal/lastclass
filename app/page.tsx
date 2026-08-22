@@ -27,12 +27,14 @@ export default function HomePage() {
   const [showSample, setShowSample] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [declined, setDeclined] = useState(false);
 
   if (!profile) return null;
 
   async function build(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setDeclined(false);
     if (topic.trim().length < 2) return setError("Enter a topic first.");
 
     setBusy(true);
@@ -47,7 +49,12 @@ export default function HomePage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
+      if (!res.ok) {
+        // A policy decline is a settled answer, not a transient failure —
+        // telling the learner to retry it would be a lie.
+        setDeclined(data.kind === "declined" || data.kind === "blocked");
+        throw new Error(data.error ?? "Something went wrong.");
+      }
       setSession(data.session as Session);
       router.push("/learn");
     } catch (err) {
@@ -174,7 +181,9 @@ export default function HomePage() {
                   )}
                 </div>
 
-                <ErrorNote>{error}</ErrorNote>
+                <ErrorNote tone={declined ? "declined" : "error"}>
+                  {error}
+                </ErrorNote>
 
                 <Button type="submit" loading={busy} className="w-full">
                   {busy

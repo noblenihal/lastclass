@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { generateJSON } from "@/lib/gemini";
+import { errorResponse, generateJSON } from "@/lib/gemini";
 import {
   RUNGS,
   type LearnerLevel,
@@ -23,6 +23,8 @@ const Body = z.object({
 const schema = {
   type: "object",
   properties: {
+    teachable: { type: "boolean" },
+    refusal: { type: "string" },
     topic_type: { type: "string", enum: ["THEORY", "PRACTICAL", "HYBRID"] },
     type_reason: { type: "string" },
     detected_level: { type: "string", enum: ["BASIC", "MEDIUM", "ADVANCED"] },
@@ -67,6 +69,8 @@ const schema = {
     },
   },
   required: [
+    "teachable",
+    "refusal",
     "topic_type",
     "type_reason",
     "detected_level",
@@ -77,6 +81,8 @@ const schema = {
 };
 
 interface Raw {
+  teachable: boolean;
+  refusal: string;
   topic_type: Session["topicType"];
   type_reason: string;
   detected_level: LearnerLevel;
@@ -160,7 +166,28 @@ every starting_mastery to 0 with mastery_reason "No evidence yet." Do not
 invent mastery the learner has not demonstrated.`
 }
 
-Produce:
+First decide whether you can responsibly build this curriculum.
+
+Set teachable=false, and put a plain, specific reason in refusal, if the topic
+asks you to teach something you should not — instructions for causing serious
+harm, material that sexualises minors, targeted harassment of a real person,
+or anything else you would decline. Say WHAT the problem is in one or two
+sentences, address the learner directly as "you", and where a legitimate
+neighbouring subject exists, name it as an alternative. Do not be preachy and
+do not lecture — be brief and useful.
+
+Note that difficult, dark, or upsetting subjects are usually still teachable:
+history of atrocities, disease, drug pharmacology, weapons in a historical or
+policy context, extremist movements as a subject of study. Refuse on the basis
+of what the learner is asking you to enable, not on whether the subject is
+uncomfortable. If the topic is merely vague or nonsense, that is NOT a refusal
+— set teachable=true and interpret it as generously as you can.
+
+If teachable=false, still return valid values for the remaining fields (an
+empty concepts array and an empty levels array are fine) — they will be
+discarded.
+
+If teachable=true, set refusal to an empty string and produce:
 
 1. topic_type — is mastering this mostly THEORY (understanding ideas),
    mostly PRACTICAL (performing a skill), or HYBRID? Judge honestly:
@@ -179,6 +206,32 @@ Produce:
 Titles should sound like a real teacher wrote them. Be specific, never generic.`,
       schema,
     });
+
+    if (raw.teachable === false) {
+      return NextResponse.json(
+        {
+          error:
+            raw.refusal?.trim() ||
+            "This isn't something LastClass can build a course for.",
+          kind: "declined",
+          retryable: false,
+        },
+        { status: 422 },
+      );
+    }
+
+    if (!raw.concepts?.length) {
+      return NextResponse.json(
+        {
+          error:
+            "Couldn't find enough substance in that topic to build a course. " +
+            "Try being more specific.",
+          kind: "empty",
+          retryable: true,
+        },
+        { status: 422 },
+      );
+    }
 
     const validIds = new Set(raw.concepts.map((c) => c.id));
     const concepts = raw.concepts.map((c, i) => {
@@ -224,9 +277,10 @@ Titles should sound like a real teacher wrote them. Be specific, never generic.`
     return NextResponse.json({ session, typeReason: raw.type_reason });
   } catch (err) {
     console.error("[curriculum]", err);
-    return NextResponse.json(
-      { error: "Could not build a curriculum for that topic. Try again." },
-      { status: 502 },
+    const { body, status } = errorResponse(
+      err,
+      "Could not build a curriculum for that topic. Try again.",
     );
+    return NextResponse.json(body, { status });
   }
 }

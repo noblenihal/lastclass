@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { generateJSON } from "@/lib/gemini";
+import { errorResponse, generateJSON } from "@/lib/gemini";
 import { byId } from "@/lib/characters";
 import { DEPTH_RULE } from "@/lib/context";
 
@@ -129,9 +129,7 @@ ${
     });
   } catch (err) {
     console.error("[judge]", err);
-    return NextResponse.json(
-      { error: "Could not judge that answer." },
-      { status: 502 },
-    );
+    const { body, status } = errorResponse(err, "Could not judge that answer.");
+    return NextResponse.json(body, { status });
   }
 }

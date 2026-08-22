@@ -151,6 +151,31 @@ MODEL: gemini-3.7-flash (vision) — verified working, wired in Phase 4
 Browser Web Speech API is used for speech-to-text only (not a Gen AI service);
 a typed fallback is always available since it is Chrome-only.
 
+ERROR HANDLING AND GUARDRAILS
+
+Failures are typed rather than generic. lib/gemini.ts inspects promptFeedback,
+finishReason and HTTP status and raises a GeminiError carrying a kind
+(blocked / recitation / rate_limited / timeout / config / unavailable), a
+message written for the learner, and a retryable flag. Safety blocks name the
+category that tripped where the API reports it.
+
+Two layers cover refusals. The curriculum call asks Gemini to decide first
+whether a topic is teachable and, if not, to return a plain reason and a
+legitimate neighbouring subject — so the learner is told what the problem is
+instead of watching a request fail. Hard safety blocks are caught separately
+and surfaced with an honest explanation.
+
+The distinction the prompt enforces: refuse on what the learner is asking to
+enable, not on whether the subject is uncomfortable. Verified — "how to
+synthesise methamphetamine at home" is declined, while "the pharmacology of
+amphetamines" and "the Holocaust" both build normally, and a nonsense topic is
+interpreted generously rather than refused.
+
+Refusals render as a settled outcome and never offer a retry, because
+retrying a policy decline cannot succeed. Only genuinely transient failures
+invite one. Voice and the generated classroom backdrop fail soft — losing
+either never blocks the lesson.
+
 NOTHING IN THE APP IS MOCKED OR HARDCODED. Every concept graph, level title,
 question, character reply and mastery change is produced by a live Gemini call
 at runtime.
