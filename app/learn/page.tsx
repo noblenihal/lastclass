@@ -53,8 +53,8 @@ export default function LearnPage() {
     session.levels.find((l) => !l.passed && l.unlocked) ?? session.levels[4];
   const shown = session.levels.find((l) => l.n === selected) ?? current;
   // Sessions saved before Teach was ungated would otherwise strand the learner.
-  const enterable =
-    shown.unlocked || shown.rung === "Teach" || shown.n === 1;
+  // Nothing is gated — sessions saved under the old rules open anyway.
+  const enterable = true;
 
   return (
     <main className="flex-1 flex flex-col">
@@ -290,7 +290,7 @@ function RailItem({
   active: boolean;
   onSelect: () => void;
 }) {
-  const locked = !level.unlocked && level.rung !== "Teach";
+  const locked = false;
 
   return (
     <li className="shrink-0 lg:shrink">

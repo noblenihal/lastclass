@@ -278,9 +278,9 @@ Titles should sound like a real teacher wrote them. Be specific, never generic.`
         rung,
         title: match?.title ?? rung,
         conceptIds: ids.length ? ids : concepts.map((c) => c.id),
-        // Rungs 2-4 are roadmap in this build, so they must not gate the
-        // classroom. Watch and Teach are the two playable rungs.
-        unlocked: i === 0 || rung === "Teach",
+        // Every rung is playable. Gating is a product decision for later —
+        // right now it only gets in the way of showing the whole ladder.
+        unlocked: true,
         passed: false,
       };
     });

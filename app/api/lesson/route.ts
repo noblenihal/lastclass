@@ -53,8 +53,20 @@ const SCHEMAS = {
             label: { type: "string" },
             detail: { type: "string" },
             narration: { type: "string" },
+            figure: {
+              type: "object",
+              properties: {
+                kind: {
+                  type: "string",
+                  enum: ["flow", "stack", "cycle", "split", "compare", "layers"],
+                },
+                nodes: { type: "array", items: { type: "string" } },
+                caption: { type: "string" },
+              },
+              required: ["kind", "nodes", "caption"],
+            },
           },
-          required: ["concept_id", "label", "detail", "narration"],
+          required: ["concept_id", "label", "detail", "narration", "figure"],
         },
       },
       check: CHECK,
@@ -126,15 +138,31 @@ const PROMPTS: Record<string, string> = {
 is in front of them and nothing is being tested yet. This is exposure — show
 them the shape of the idea, in order, clearly.
 
-Script a whiteboard walkthrough:
+Script a whiteboard walkthrough. A teacher is DRAWING while they talk, so
+every beat must have something worth drawing.
+
 - headline: what gets written at the top of the board. Under 6 words.
-- beats: one per concept, drawn in prerequisite order (foundations first).
+- beats: EXACTLY ONE PER CONCEPT listed above, in prerequisite order
+  (foundations first). Never skip a concept and never merge two.
   · concept_id — one of the ids above
-  · label — what is written in the box. 2 to 5 words, no punctuation.
-  · detail — one short line under the box. Under 12 words.
-  · narration — what the teacher SAYS while drawing it. Two sentences max,
-    natural spoken English. Each beat must connect to the one before, so the
-    board builds an argument rather than a list.`,
+  · label — what is written above the drawing. 2 to 5 words, no punctuation.
+  · detail — one short line under it. Under 12 words.
+  · narration — what the teacher SAYS while drawing it. Two or three
+    sentences of natural spoken English. It must describe what is appearing
+    on the board as it appears, and connect to the beat before, so the board
+    builds an argument rather than a list.
+  · figure — the diagram drawn for this beat. Pick the kind that genuinely
+    fits the idea; do not default to "flow" for everything:
+      flow    — a sequence of steps, left to right (a process, a pipeline)
+      stack   — items piling up and unwinding vertically (a call stack, layers
+                of history, anything last-in-first-out)
+      cycle   — a loop that returns to its start (a feedback loop, a cycle)
+      split   — one thing branching into two outcomes (a decision, a fork)
+      compare — two things set side by side (before/after, right/wrong)
+      layers  — things nested inside each other (scopes, containment)
+    nodes — 2 to 5 very short labels, in order, each 1-4 words. These are the
+    words drawn INSIDE the shapes, so they must be short enough to fit.
+    caption — one short line under the drawing explaining what it shows.`,
 
   Understand: `Rung 2 of 5 — UNDERSTAND. The learner has seen the shape; now it has to
 connect to something they already own. Build the whole topic as one sustained

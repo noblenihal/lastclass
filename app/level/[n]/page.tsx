@@ -11,13 +11,8 @@ import { RUNGS, RUNG_LABEL } from "@/lib/types";
 import { ThemePicker } from "@/components/ThemePicker";
 import { Button, ErrorNote, Eyebrow, Reveal } from "@/components/ui";
 import { Check, type CheckData } from "@/components/lesson/Check";
+import { Whiteboard, type Beat } from "@/components/lesson/Whiteboard";
 
-interface Beat {
-  concept_id: string;
-  label: string;
-  detail: string;
-  narration: string;
-}
 interface Row {
   concept_id: string;
   concept_side: string;
@@ -62,6 +57,8 @@ export default function LevelPage({
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  /** Rung 1 holds its question back until the board has been watched. */
+  const [watched, setWatched] = useState(false);
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -160,7 +157,11 @@ export default function LevelPage({
             <Reveal delay={0.08}>
               <div className="mt-7 space-y-6">
                 {rung === "Remember" && lesson.beats && (
-                  <Whiteboard beats={lesson.beats} topic={session.topic} />
+                  <Whiteboard
+                    beats={lesson.beats as Beat[]}
+                    topic={session.topic}
+                    onFinished={() => setWatched(true)}
+                  />
                 )}
                 {rung === "Understand" && lesson.mapping && (
                   <Analogy lesson={lesson} interest={session.interest} />
@@ -187,7 +188,7 @@ export default function LevelPage({
                   />
                 )}
 
-                {lesson.check && (
+                {lesson.check && (rung !== "Remember" || watched) && (
                   <Check check={lesson.check} onDone={finish} />
                 )}
               </div>
@@ -218,70 +219,6 @@ function Loading({ rung }: { rung: string }) {
         />
       ))}
     </div>
-  );
-}
-
-/* ---------------- Rung 1 · the board draws itself ---------------- */
-function Whiteboard({ beats, topic }: { beats: Beat[]; topic: string }) {
-  const [shown, setShown] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const speaker = useSpeaker();
-
-  const play = useCallback(async () => {
-    setPlaying(true);
-    for (let i = 0; i < beats.length; i += 1) {
-      setShown(i + 1);
-      await speaker.speak(beats[i].narration, "Kore");
-    }
-    setPlaying(false);
-  }, [beats, speaker]);
-
-  return (
-    <section>
-      <div className="rounded-[var(--radius-lg)] border-4 border-[oklch(45%_0.06_55)] bg-[oklch(24%_0.02_150)] p-5 shadow-inner">
-        <p className="mb-4 text-center font-[family-name:var(--font-mono)] text-[var(--text-xs)] uppercase tracking-[0.18em] text-[oklch(88%_0.03_80)]">
-          {topic}
-        </p>
-        <ol className="space-y-3">
-          {beats.map((b, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: i < shown ? 1 : 0.12 }}
-              transition={{ duration: 0.5 }}
-              className="flex gap-3"
-            >
-              <span className="mt-1 shrink-0 font-[family-name:var(--font-mono)] text-[var(--text-sm)] text-[oklch(78%_0.13_75)]">
-                {i + 1}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[var(--text-lg)] font-medium text-[oklch(95%_0.02_85)]">
-                  {b.label}
-                </span>
-                <span className="block text-[var(--text-sm)] text-[oklch(80%_0.02_85)]">
-                  {b.detail}
-                </span>
-              </span>
-            </motion.li>
-          ))}
-        </ol>
-      </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button onClick={play} disabled={playing}>
-          {playing ? <Volume2 size={15} /> : <Play size={15} />}
-          {playing ? "Teaching…" : shown ? "Play again" : "Start the lesson"}
-        </Button>
-        {!playing && shown < beats.length && (
-          <button
-            onClick={() => setShown(beats.length)}
-            className="text-[var(--text-sm)] text-[var(--color-ink-3)] hover:text-[var(--color-ink)]"
-          >
-            Show the whole board
-          </button>
-        )}
-      </div>
-    </section>
   );
 }
 
