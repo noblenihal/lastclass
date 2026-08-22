@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Concept, Session } from "./types";
-import { statusOf } from "./types";
+import type { Session } from "./types";
+import { nudge, pass, weakest as pickWeakest } from "./model";
 
 const KEY = "lastclass:session";
 
@@ -35,17 +35,12 @@ export function useSession() {
     }
   }, []);
 
-  /** Moves a concept's mastery by a delta, clamped, and recomputes its status. */
+  /** Moves a concept's mastery by a delta. The rules live in model.ts. */
   const nudgeMastery = useCallback(
     (conceptId: string, delta: number) => {
       setSession((prev) => {
         if (!prev) return prev;
-        const concepts: Concept[] = prev.concepts.map((c) => {
-          if (c.id !== conceptId) return c;
-          const mastery = Math.min(1, Math.max(0, c.mastery + delta));
-          return { ...c, mastery, status: statusOf(mastery, true) };
-        });
-        const next = { ...prev, concepts };
+        const next = { ...prev, concepts: nudge(prev.concepts, conceptId, delta) };
         try {
           window.localStorage.setItem(KEY, JSON.stringify(next));
         } catch {
@@ -61,14 +56,7 @@ export function useSession() {
   const passLevel = useCallback((n: number) => {
     setSession((prev) => {
       if (!prev) return prev;
-      const levels = prev.levels.map((l) =>
-        l.n === n
-          ? { ...l, passed: true }
-          : l.n === n + 1
-            ? { ...l, unlocked: true }
-            : l,
-      );
-      const next = { ...prev, levels };
+      const next = { ...prev, levels: pass(prev.levels, n) };
       try {
         window.localStorage.setItem(KEY, JSON.stringify(next));
       } catch {
@@ -82,6 +70,4 @@ export function useSession() {
 }
 
 /** Concepts the learner is shakiest on — drives which doubts the room raises. */
-export function weakest(session: Session, n = 3): Concept[] {
-  return [...session.concepts].sort((a, b) => a.mastery - b.mastery).slice(0, n);
-}
+export const weakest = pickWeakest;
