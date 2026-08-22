@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LogOut } from "lucide-react";
+import { ArrowRight, FileText, LogOut } from "lucide-react";
 import { useAuth, useRequireProfile } from "@/lib/auth";
 import { useSession } from "@/lib/store";
-import { RUNGS, RUNG_BLURB, RUNG_LABEL, type Session } from "@/lib/types";
+import {
+  LEVEL_CHOICES,
+  RUNGS,
+  RUNG_BLURB,
+  RUNG_LABEL,
+  type LearnerLevel,
+  type Session,
+} from "@/lib/types";
 import { Button, ErrorNote, Eyebrow, Field, Reveal } from "@/components/ui";
 
 export default function HomePage() {
@@ -16,6 +23,9 @@ export default function HomePage() {
 
   const [topic, setTopic] = useState("");
   const [interest, setInterest] = useState("");
+  const [level, setLevel] = useState<LearnerLevel>("BASIC");
+  const [sample, setSample] = useState("");
+  const [showSample, setShowSample] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,7 +43,12 @@ export default function HomePage() {
       const res = await fetch("/api/curriculum", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: topic.trim(), interest: interest.trim() }),
+        body: JSON.stringify({
+          topic: topic.trim(),
+          interest: interest.trim(),
+          level,
+          sample: sample.trim() || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
@@ -95,10 +110,90 @@ export default function HomePage() {
                   onChange={(e) => setInterest(e.target.value)}
                 />
 
+                {/* how much they already know */}
+                <fieldset>
+                  <legend className="block text-[var(--text-base)] font-medium text-[var(--color-ink)] mb-2">
+                    How deep should we go?
+                  </legend>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {LEVEL_CHOICES.map((c) => {
+                      const on = level === c.value;
+                      return (
+                        <button
+                          key={c.value}
+                          type="button"
+                          onClick={() => setLevel(c.value)}
+                          aria-pressed={on}
+                          className={
+                            "rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow] duration-[var(--dur-fast)] " +
+                            (on
+                              ? "border-[var(--color-accent)] bg-[var(--color-accent-ghost)] shadow-[var(--glow)]"
+                              : "border-[var(--color-paper-4)] bg-[var(--color-paper-2)] hover:border-[var(--color-ink-4)]")
+                          }
+                        >
+                          <span
+                            className={
+                              "block text-[var(--text-base)] font-medium leading-tight " +
+                              (on
+                                ? "text-[var(--color-accent)]"
+                                : "text-[var(--color-ink)]")
+                            }
+                          >
+                            {c.label}
+                          </span>
+                          <span className="block mt-0.5 text-[var(--text-xs)] text-[var(--color-ink-3)] leading-snug">
+                            {c.hint}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+
+                {/* optional: let the writing speak instead of the self-rating */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowSample(!showSample)}
+                    className="flex items-center gap-2 text-[var(--text-sm)] text-[var(--color-accent)] hover:text-[var(--color-accent-hot)] transition-colors duration-[var(--dur-fast)]"
+                  >
+                    <FileText size={14} />
+                    {showSample
+                      ? "Hide writing sample"
+                      : "Or paste something you've written about it"}
+                  </button>
+                  {showSample && (
+                    <div className="mt-3">
+                      <p className="mb-2 text-[var(--text-sm)] text-[var(--color-ink-3)] leading-relaxed">
+                        Paste your notes, an answer you wrote, or material
+                        you&apos;ve been studying. We&apos;ll read it to work out
+                        what you actually understand — and start your map with
+                        real values instead of zeros.
+                      </p>
+                      <textarea
+                        value={sample}
+                        onChange={(e) => setSample(e.target.value)}
+                        rows={6}
+                        placeholder="Paste your notes or an explanation you've written…"
+                        className="w-full resize-none rounded-[var(--radius-md)] bg-[var(--color-paper-2)] border border-[var(--color-paper-4)] px-4 py-3 text-[var(--text-base)] leading-relaxed text-[var(--color-ink)] placeholder:text-[var(--color-ink-4)] outline-none transition-[border-color,box-shadow] duration-[var(--dur-fast)] focus:border-[var(--color-accent)] focus:shadow-[var(--glow)]"
+                      />
+                      <p className="mt-1.5 text-[var(--text-xs)] text-[var(--color-ink-4)]">
+                        {sample.trim().length < 40
+                          ? "Needs about 40+ characters to read anything from."
+                          : `${sample.trim().length} characters — enough to assess.`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 <ErrorNote>{error}</ErrorNote>
 
                 <Button type="submit" loading={busy} className="w-full">
-                  {busy ? "Building your levels…" : "Build my 5 levels"}
+                  {busy
+                    ? sample.trim().length > 40
+                      ? "Reading your writing…"
+                      : "Building your levels…"
+                    : "Build my 5 levels"}
                   {!busy && <ArrowRight size={16} />}
                 </Button>
               </form>

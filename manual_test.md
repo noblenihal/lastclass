@@ -47,6 +47,35 @@ and Tree Traversals"*), never a generic "Level 4: Apply".
 > Try a nonsense topic (`asdfgh`) — you should get a clean error message,
 > not a crash or a fabricated curriculum.
 
+### 1.2b Depth calibration — the strongest proof it is not canned
+Run the **same topic at two different depths** and compare.
+
+1. Topic `gravity`, interest `football`, depth **Basic** → Build.
+   Note the concept names, then go back and run it again with depth
+   **Advanced**.
+2. **Expect completely different curricula, not reworded ones.** Our run gave:
+
+   | Basic (10-year-old) | Advanced (university) |
+   |---|---|
+   | Earth's Invisible Pull | Equivalence Principle & Metric Geometry |
+   | Bigger Objects Pull Harder | Stress-Energy Tensor & Conservation |
+   | Dropping at Equal Speed | Geodesic Motion & Affine Connections |
+   | Air Pushing Back | Einstein Field Equations |
+   | Falling Around the Curve | Linearized Gravity & Wave Dynamics |
+
+   Basic's level 4 also picked up the stated interest:
+   *"Predicting the Path of High Kicks and Drops."*
+
+### 1.2c Level detection from your own writing
+1. On the topic screen click **"Or paste something you've written about it"**.
+2. Paste a few sentences of your own explanation of the topic — deliberately
+   make it half-right (confident but with a gap or an error).
+3. Build.
+4. **Expect:** the concept map does **not** start at all-zero. Nodes the
+   writing demonstrated come back partly filled; nodes it said nothing about
+   stay at "not started". Confident-sounding but wrong prose should NOT earn
+   mastery — that is the strict-grading rule working.
+
 ### 1.3 The learning path
 1. Look at the map — it's always on screen, on every level.
 2. **Expect:**

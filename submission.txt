@@ -1,6 +1,6 @@
 LASTCLASS — PromptWars submission
 Challenge: Adaptive Learning Intelligence System
-Last updated: after Phase 2 (the Classroom)
+Last updated: after Phase 3 (workspace UI + depth calibration)
 
 ================================================================
 1. PUBLIC GITHUB REPOSITORY LINK
@@ -25,10 +25,21 @@ https://promptwar-private-8db59kytq-nihal-guptas-projects.vercel.app
 LastClass turns any topic into a five-level climb and ends by making the
 learner teach it to a class that asks questions back.
 
-Enter a topic and a personal interest. Gemini breaks the topic into a
-prerequisite concept graph, classifies it as theory/practical/hybrid, and
-generates five levels titled for that specific topic: Watch, Compare,
-Picture, Do, Teach.
+Enter a topic, a personal interest, and how deep to go (Basic / Medium /
+Advanced). Gemini breaks the topic into a prerequisite concept graph,
+classifies it as theory/practical/hybrid, and generates five levels titled
+for that specific topic: Watch, Compare, Picture, Do, Teach.
+
+Depth genuinely changes the curriculum rather than the wording. "Gravity" at
+Basic returns Earth's Invisible Pull, Bigger Objects Pull Harder, Air Pushing
+Back; the same topic at Advanced returns the Equivalence Principle, the
+Stress-Energy Tensor and the Einstein Field Equations.
+
+The learner can also paste something they have written about the topic.
+Gemini reads it, judges their real level from how they use terminology and
+what they omit, and seeds the concept map with starting mastery values — so
+the map opens with real signal instead of zeros. Confident-sounding but wrong
+prose earns no mastery.
 
 The learner model is a live concept map. Each node carries a mastery value
 that moves only on real evidence of what the learner did — never a preset.
@@ -59,6 +70,8 @@ Built and deployed in phases; every phase is a working, deployed increment.
   Phase 0 — scaffold, repo, deploy pipeline
   Phase 1 — concept graph, five-level ladder, live mastery map
   Phase 2 — the Classroom (teach-back, raised hands, spoken characters)
+  Phase 3 — persistent workspace UI, legible learning-path map, depth
+            calibration and level detection from a writing sample
 
 ================================================================
 4. GEN AI SERVICES UTILISED, AND WHERE
@@ -72,8 +85,10 @@ so responses are guaranteed-parseable rather than prompt-and-hope)
 
   /api/curriculum      Breaks a free-text topic into a prerequisite concept
                        graph, classifies it THEORY / PRACTICAL / HYBRID with a
-                       stated reason, and writes five topic-specific level
-                       titles.
+                       stated reason, writes five topic-specific level titles
+                       pitched at the requested depth, and — when the learner
+                       pastes a writing sample — judges their real level from
+                       it and seeds per-concept starting mastery.
 
   /api/classroom/doubts Reads the learner's spoken explanation together with
                        their current mastery values and generates the questions

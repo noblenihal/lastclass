@@ -8,6 +8,36 @@
 
 export type TopicType = "THEORY" | "PRACTICAL" | "HYBRID";
 
+export type LearnerLevel = "BASIC" | "MEDIUM" | "ADVANCED";
+
+/**
+ * How deep the explanation should be pitched. Gravity for a curious
+ * ten-year-old and gravity for an undergraduate are different curricula,
+ * not the same curriculum at different speeds — so this drives which
+ * concepts appear at all, not just the wording.
+ */
+export const LEVEL_CHOICES: {
+  value: LearnerLevel;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    value: "BASIC",
+    label: "Basic",
+    hint: "Curious 10-year-old. Everyday words, no formulas.",
+  },
+  {
+    value: "MEDIUM",
+    label: "Medium",
+    hint: "High-school. Real terminology, some maths.",
+  },
+  {
+    value: "ADVANCED",
+    label: "Advanced",
+    hint: "University. Full rigour and edge cases.",
+  },
+];
+
 export type Rung = "Remember" | "Understand" | "Internalize" | "Apply" | "Teach";
 
 export const RUNGS: Rung[] = [
@@ -66,6 +96,12 @@ export interface Session {
   topicType: TopicType;
   /** The learner's interest domain — every analogy is transposed into it. */
   interest: string;
+  /** What the learner said their level was. */
+  statedLevel: LearnerLevel;
+  /** What their writing sample actually showed, if they gave one. */
+  detectedLevel?: LearnerLevel;
+  /** Why the sample was read that way — shown back to the learner. */
+  levelEvidence?: string;
   concepts: Concept[];
   levels: Level[];
   createdAt: number;
